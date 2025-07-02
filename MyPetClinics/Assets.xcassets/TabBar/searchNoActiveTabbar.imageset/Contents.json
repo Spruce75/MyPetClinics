@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "Search No Active tabbar.png",
+      "filename" : "magnifyingglass.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "Search No Active tabbar 1.png",
+      "filename" : "magnifyingglass 1.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "Search No Active tabbar 2.png",
+      "filename" : "magnifyingglass 2.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

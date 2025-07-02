@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "PetClinics Active tabbar.png",
+      "filename" : "heart.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "PetClinics Active tabbar 1.png",
+      "filename" : "heart 1.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "PetClinics Active tabbar 2.png",
+      "filename" : "heart 2.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

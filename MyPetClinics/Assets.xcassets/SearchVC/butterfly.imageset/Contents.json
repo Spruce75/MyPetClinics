@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "person.circle.fill.png",
+      "filename" : "butterfly.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "person.circle.fill 1.png",
+      "filename" : "butterfly 1.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "person.circle.fill 2.png",
+      "filename" : "butterfly 2.png",
       "idiom" : "universal",
       "scale" : "3x"
     }
