@@ -132,7 +132,7 @@ final class SearchViewController: UIViewController, SortOptionsViewControllerDel
     
     // MARK: - SortOptionsViewControllerDelegate
     func sortOptionsViewController(
-        _ controller: SortOptionsViewController,
+        _ controller: SortViewController,
         didSelectOptionAt index: Int
     ) {
         selectedSortOptionIndex = index
@@ -238,53 +238,6 @@ final class SearchViewController: UIViewController, SortOptionsViewControllerDel
         view.layoutIfNeeded()
     }
     
-//    private func filterContentForSearchText(_ searchText: String) {
-//        hasSearched = true
-//        loadingView.show()
-//        emptyStateView.isHidden = true
-//        tableView.isHidden = true
-//        actionsStackView.isHidden = true
-//        
-//        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-//            guard let self = self else { return }
-//            let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-//            
-//            let predicates: [(VetClinic) -> Bool] = FilterConfigurationProvider.defaultSections()
-//                .flatMap { $0.options }
-//                .filter { self.selectedFilterOptions.contains($0.name) }
-//                .compactMap { option in
-//                    switch option.name {
-//                    case "Vet clinic", "Vet hospital", "Private veterinarian":
-//                        return { clinic in clinic.type == option.name }
-//                    case "Open 24/7":
-//                        return { clinic in clinic.emergencyInfo?.localizedCaseInsensitiveContains("24/7") == true }
-//                    case "Weekend & Holiday Open":
-//                        return { clinic in clinic.emergencyInfo?.localizedCaseInsensitiveContains("weekend") == true }
-//                    case "Emergency Services":
-//                        return { clinic in clinic.emergencyInfo != nil }
-//                    case "Online Consultation Available":
-//                        return { clinic in clinic.onlineConsultationAvailable }
-//                    default:
-//                        return nil
-//                    }
-//                }
-//            
-//            let results = self.vetClinics.filter { clinic in
-//                let matchesText = query.isEmpty
-//                    || clinic.name.lowercased().contains(query)
-//                    || clinic.address.lowercased().contains(query)
-//                let matchesFilters = predicates.allSatisfy { $0(clinic) }
-//                return matchesText && matchesFilters
-//            }
-//            
-//            DispatchQueue.main.async {
-//                self.filteredClinics = results
-//                self.updateUIState()
-//                self.loadingView.hide()
-//            }
-//        }
-//    }
-    
     private func filterContentForSearchText(_ searchText: String) {
         hasSearched = true
         loadingView.show()
@@ -305,31 +258,31 @@ final class SearchViewController: UIViewController, SortOptionsViewControllerDel
             let needWeekend   = self.selectedFilterOptions.contains("Weekend & Holiday Open")
             let needEmergency = self.selectedFilterOptions.contains("Emergency Services")
             let needOnline    = self.selectedFilterOptions.contains("Online Consultation Available")
-
+            
             let results = self.vetClinics.filter { clinic in
                 // текст
                 let matchesText = query.isEmpty
-                    || clinic.name.lowercased().contains(query)
-                    || clinic.address.lowercased().contains(query)
-
+                || clinic.name.lowercased().contains(query)
+                || clinic.address.lowercased().contains(query)
+                
                 // тип (ИЛИ)
                 let matchesType = selectedTypes.isEmpty || selectedTypes.contains(clinic.type)
-
+                
                 // прочие (И)
                 let emergencyText = clinic.emergencyInfo?.lowercased() ?? ""
                 let matches247       = !need247       || emergencyText.contains("24/7")
                 let matchesWeekend   = !needWeekend   || emergencyText.contains("weekend")
                 let matchesEmergency = !needEmergency || clinic.emergencyInfo != nil
                 let matchesOnline    = !needOnline    || clinic.onlineConsultationAvailable
-
+                
                 return matchesText
-                    && matchesType
-                    && matches247
-                    && matchesWeekend
-                    && matchesEmergency
-                    && matchesOnline
+                && matchesType
+                && matches247
+                && matchesWeekend
+                && matchesEmergency
+                && matchesOnline
             }
-
+            
             DispatchQueue.main.async {
                 self.filteredClinics = results
                 self.updateUIState()
@@ -337,15 +290,15 @@ final class SearchViewController: UIViewController, SortOptionsViewControllerDel
             }
         }
     }
-
     
-    // MARK: - Actions
+    
+    // MARK: - Event Handler (Actions)
     @objc private func dismissKeyboard() {
         view.endEditing(true)
     }
     
     @objc private func sortTapped() {
-        let sortVC = SortOptionsViewController()
+        let sortVC = SortViewController()
         sortVC.options = sortOptions
         sortVC.selectedIndex = selectedSortOptionIndex
         sortVC.delegate = self
@@ -395,7 +348,40 @@ final class SearchViewController: UIViewController, SortOptionsViewControllerDel
         present(filtersVC, animated: true)
     }
     
-    @objc private func mapTapped() { /* TODO */ }
+    @objc private func mapTapped() {
+        let clinicsToDisplay: [VetClinic] = (hasSearched ? filteredClinics : vetClinics)
+        guard !clinicsToDisplay.isEmpty else { return }
+        
+        let clinicsMapViewController = ClinicsMapViewController(
+            clinics: clinicsToDisplay,
+            onClinicSelected: { [weak self] selectedClinic in
+                guard let self = self else { return }
+                let clinicDetailsViewController = ClinicDetailsViewController(
+                    clinic: selectedClinic,
+                    clinicService: self.clinicService
+                ) { [weak self] updatedClinic in
+                    guard let self = self else { return }
+                    if let rowIndex = self.filteredClinics.firstIndex(where: { $0.id == updatedClinic.id }) {
+                        self.filteredClinics[rowIndex] = updatedClinic
+                        self.tableView.reloadRows(at: [IndexPath(row: rowIndex, section: 0)], with: .none)
+                    }
+                    self.clinicService.updateBookmark(updatedClinic, isBookmarked: updatedClinic.isBookmarked) { }
+                }
+                self.navigationController?.pushViewController(clinicDetailsViewController, animated: true)
+            }
+        )
+        
+        if #available(iOS 15.0, *) {
+            if let sheet = clinicsMapViewController.sheetPresentationController {
+                sheet.prefersGrabberVisible = true
+                sheet.prefersScrollingExpandsWhenScrolledToEdge = false
+                sheet.detents = [.large()]
+            }
+            present(clinicsMapViewController, animated: true)
+        } else {
+            navigationController?.pushViewController(clinicsMapViewController, animated: true)
+        }
+    }
 }
 
 // MARK: - Layout

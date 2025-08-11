@@ -146,9 +146,11 @@ extension VetClinic {
         clinicPhotos: ["Status 1", "Status 2", "Status 3"],
         type: "Vet clinic",
         onlineConsultationAvailable: false,
-        isBookmarked: false
+        isBookmarked: false,
+        latitude: 61.49770280571968,
+        longitude: 23.743094338147202
     )
-    
+
     static let samplePyynikinElainlaakarit = VetClinic(
         name: "Pyynikin Eläinlääkärit",
         address: "Sotkankatu 20",
@@ -557,7 +559,9 @@ extension VetClinic {
         clinicPhotos: ["Pyynikin Eläinlääkärit 1", "Pyynikin Eläinlääkärit 2", "Pyynikin Eläinlääkärit 3", "Pyynikin Eläinlääkärit 4", "Pyynikin Eläinlääkärit 5"],
         type: "Vet hospital",
         onlineConsultationAvailable: false,
-        isBookmarked: false
+        isBookmarked: false,
+        latitude: 61.49842832458735,
+        longitude: 23.741426106834922
     )
 
     static let mockData: [VetClinic] = [

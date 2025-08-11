@@ -58,4 +58,7 @@ struct VetClinic: Identifiable {
     let onlineConsultationAvailable: Bool
     
     var isBookmarked: Bool
+    
+    let latitude: Double
+    let longitude: Double
 }

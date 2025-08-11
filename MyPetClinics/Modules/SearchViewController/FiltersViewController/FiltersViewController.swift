@@ -48,20 +48,6 @@ final class FiltersViewController: UIViewController {
     
     private let filterSections: [FilterSection] = FilterConfigurationProvider.defaultSections()
     
-//    private let sections: [(title: String, options: [String])] = [
-//        (String(localized: "clinic_type_title"), [
-//            "Vet clinic",
-//            "Vet hospital",
-//            "Private veterinarian"
-//        ]),
-//        (String(localized: "other_filters_title"), [
-//            "Open 24/7",
-//            "Weekend & Holiday Open",
-//            "Emergency Services",
-//            "Online Consultation Available"
-//        ])
-//    ]
-
     private lazy var tableView: UITableView = {
         var tableView = UITableView()
         tableView.dataSource = self

@@ -9,12 +9,12 @@ import UIKit
 
 protocol SortOptionsViewControllerDelegate: AnyObject {
     func sortOptionsViewController(
-        _ controller: SortOptionsViewController,
+        _ controller: SortViewController,
         didSelectOptionAt index: Int
     )
 }
 
-final class SortOptionsViewController: UIViewController {
+final class SortViewController: UIViewController {
     
     // MARK: - Публичное API
     weak var delegate: SortOptionsViewControllerDelegate?
@@ -61,7 +61,7 @@ final class SortOptionsViewController: UIViewController {
 }
 
 // MARK: - Layout
-private extension SortOptionsViewController {
+private extension SortViewController {
     func setupViewsAndConstraints() {
         [titleLabel, tableView, applyButton].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
@@ -87,7 +87,7 @@ private extension SortOptionsViewController {
 }
 
 // MARK: - UITableViewDataSource & Delegate
-extension SortOptionsViewController: UITableViewDataSource, UITableViewDelegate {
+extension SortViewController: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tv: UITableView, numberOfRowsInSection section: Int) -> Int {
         options.count
     }
