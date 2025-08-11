@@ -10,7 +10,7 @@ import UIKit
 final class PricesViewController: UIViewController {
     private let clinic: VetClinic
     private let screenTitle: String
-    private let textView = UITextView()
+    private let textView = TextViews(style: .descriptionTextStyle)
     private lazy var clinicTitle = Labels(style: .bold17LabelStyle, text: clinic.name)
 
     init(clinic: VetClinic, screenTitle: String) {
@@ -27,9 +27,11 @@ final class PricesViewController: UIViewController {
         view.backgroundColor = .systemBackground
         setupViewsAndConstraints()
 
-        textView.translatesAutoresizingMaskIntoConstraints = false
-        textView.isEditable = false
-        textView.font = .systemFont(ofSize: 15)
+        configureTextView()
+    }
+    
+    //MARK: - Private Methods
+    private func configureTextView() {
         textView.text = clinic.pricesText
     }
 }

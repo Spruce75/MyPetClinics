@@ -33,16 +33,16 @@ final class StaffViewController: UIViewController {
         layout.minimumInteritemSpacing = spacing
         layout.estimatedItemSize = .zero
 
-        let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
-        cv.translatesAutoresizingMaskIntoConstraints = false
-        cv.backgroundColor = .clear
-        cv.register(
+        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        collectionView.translatesAutoresizingMaskIntoConstraints = false
+        collectionView.backgroundColor = .clear
+        collectionView.register(
             StaffCollectionViewCell.self,
             forCellWithReuseIdentifier: StaffCollectionViewCell.reuseIdentifier
         )
-        cv.dataSource = self
-        cv.delegate = self
-        return cv
+        collectionView.dataSource = self
+        collectionView.delegate = self
+        return collectionView
     }()
 
     private var staff: [StaffMember] = []
@@ -139,10 +139,14 @@ extension StaffViewController: UICollectionViewDataSource {
         cellForItemAt indexPath: IndexPath
     ) -> UICollectionViewCell {
         let member = staff[indexPath.item]
-        let cell = collectionView.dequeueReusableCell(
-            withReuseIdentifier: StaffCollectionViewCell.reuseIdentifier,
-            for: indexPath
-        ) as! StaffCollectionViewCell
+        guard
+            let cell = collectionView.dequeueReusableCell(
+                withReuseIdentifier: StaffCollectionViewCell.reuseIdentifier,
+                for: indexPath
+            ) as? StaffCollectionViewCell
+        else {
+            return UICollectionViewCell()
+        }
         cell.configure(with: member)
         return cell
     }

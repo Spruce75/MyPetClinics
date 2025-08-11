@@ -12,7 +12,7 @@ final class StaffCollectionViewCell: UICollectionViewCell {
     static let reuseIdentifier = "StaffCell"
     
     // MARK: - Private Properties
-    private let imageView = Images(style: .thumbnail)
+    private let imageView = Images(style: .thumbnail(name: ""))
     private let nameLabel = Labels(style: .ordinaryText13LabelStyle)
     private let stack = StackViews(style: .verticalCenterStackView)
     
@@ -26,8 +26,12 @@ final class StaffCollectionViewCell: UICollectionViewCell {
     
     // MARK: - Public Methods
     func configure(with member: StaffMember) {
-        imageView.image = UIImage(named: member.imageName)
         nameLabel.text  = member.name
+        
+        // единый placeholder
+        let placeholder = UIImage(named: "no photo")
+        // если нашёлся реальный ассет ─ берём его, иначе placeholder
+        imageView.image = UIImage(named: member.imageName) ?? placeholder
     }
 }
 

@@ -54,17 +54,17 @@ final class ClinicDetailsViewController: UIViewController {
     private lazy var menuStackView = StackViews(style: .verticall6StackView2)
     
     private lazy var pricesRow = MenuRow(
-        title: "Prices",
+        title: String(localized: "prices_title"),
         target: self,
         action: #selector(pricesTapped)
     )
     private lazy var staffRow  = MenuRow(
-        title: "Staff",
+        title: String(localized: "staff_title"),
         target: self,
         action: #selector(staffTapped)
     )
     private lazy var photosRow = MenuRow(
-        title: "Photos",
+        title: String(localized: "photos_title"),
         target: self,
         action: #selector(photosTapped)
     )
@@ -176,7 +176,12 @@ final class ClinicDetailsViewController: UIViewController {
     }
     
     @objc private func photosTapped() {
-        // TODO: пуш ClinicPhotosViewController
+        let screenTitle = photosRow.titleText
+        let viewController = ClinicPhotosViewController(
+            clinic: clinic,
+            screenTitle: screenTitle
+        )
+        navigationController?.pushViewController(viewController, animated: true)
     }
     
     @objc private func bookingTapped() {

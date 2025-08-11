@@ -10,4 +10,5 @@ import Foundation
 struct StaffMember {
     let name: String
     let imageName: String
+    let bio: String
 }

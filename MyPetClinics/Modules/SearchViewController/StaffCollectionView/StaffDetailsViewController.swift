@@ -9,18 +9,20 @@ import UIKit
 
 final class StaffDetailsViewController: UIViewController {
     // MARK: - Private Properties
-    private let member: StaffMember
+    private let staffMember: StaffMember
     private let nameLabel = Labels(style: .bold17LabelStyle)
+    private let staffBioTextView = TextViews(style: .descriptionTextStyle)
     private lazy var imageView = Images(
-        style: .largeProfile(name: member.imageName)
+        style: .largeProfile(name: staffMember.imageName)
     )
     
     // MARK: - Initializers
     init(member: StaffMember) {
-        self.member = member
+        self.staffMember = member
         super.init(nibName: nil, bundle: nil)
         title = member.name
         nameLabel.text = member.name
+        staffBioTextView.text = member.bio
     }
     
     required init?(coder: NSCoder) { fatalError() }
@@ -36,8 +38,10 @@ final class StaffDetailsViewController: UIViewController {
 //MARK: - Layout
 extension StaffDetailsViewController {
     private func setupViewsAndConstraints() {
-        view.addSubview(imageView)
-        view.addSubview(nameLabel)
+        
+        [imageView, nameLabel, staffBioTextView].forEach {
+            view.addSubview($0)
+        }
         
         NSLayoutConstraint.activate([
             imageView.topAnchor.constraint(
@@ -54,9 +58,25 @@ extension StaffDetailsViewController {
                 equalTo: imageView.bottomAnchor,
                 constant: 16
             ),
-            nameLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor)
+            nameLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            
+            staffBioTextView.topAnchor.constraint(
+                equalTo: nameLabel.bottomAnchor,
+                constant: 12
+            ),
+            staffBioTextView.leadingAnchor.constraint(
+                equalTo: view.leadingAnchor,
+                constant: 16
+            ),
+            staffBioTextView.trailingAnchor.constraint(
+                equalTo: view.trailingAnchor,
+                constant: -16
+            ),
+            staffBioTextView.bottomAnchor.constraint(
+                equalTo: view.safeAreaLayoutGuide.bottomAnchor,
+                constant: -16
+            )
         ])
         
     }
 }
-

@@ -10,8 +10,8 @@ import UIKit
 final class ClinicRating: UIStackView {
     
     // MARK: - Private Properties
-    private lazy var redStarsImage: UIImage? = UIImage(named: "redStarRating")
-    private lazy var greyStarsImage: UIImage? = UIImage(named: "greyStarRating")
+    private let redStarsImage = Images(style: .normal(name: "redStarRating"))
+    private let greyStarsImage = Images(style: .normal(name: "greyStarRating"))
     private var currentRating: Int = 0
     
     // MARK: - Initializers
@@ -26,36 +26,6 @@ final class ClinicRating: UIStackView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    // MARK: - Private Methods
-    private func setupStackView() {
-        axis = .horizontal
-        spacing = 2
-        distribution = .fillProportionally
-        translatesAutoresizingMaskIntoConstraints = false
-    }
-    
-    private func createStarImageView(tag: Int) -> UIImageView {
-        let imageView = UIImageView()
-        imageView.image = greyStarsImage
-        imageView.tag = tag
-        
-        imageView.contentMode = .scaleAspectFit
-        imageView.translatesAutoresizingMaskIntoConstraints = false
-
-        imageView.widthAnchor.constraint(
-            equalTo: imageView.heightAnchor
-        ).isActive = true
-        
-        return imageView
-    }
-    
-    private func addStarImageViews(count: Int) {
-        for index in 1...count {
-            let imageView = createStarImageView(tag: index)
-            addArrangedSubview(imageView)
-        }
-    }
-    
     // MARK: - Public Methods
     func setupRating(rating: Int) {
         currentRating = max(0, min(rating, 5))
@@ -63,9 +33,32 @@ final class ClinicRating: UIStackView {
         for view in arrangedSubviews {
             if let imageView = view as? UIImageView {
                 imageView.image = imageView.tag > currentRating
-                ? greyStarsImage
-                : redStarsImage
+                ? greyStarsImage.image
+                : redStarsImage.image
             }
         }
     }
+    
+    // MARK: - Private Methods
+    private func setupStackView() {
+        axis = .horizontal
+        spacing = 2
+        distribution = .fill
+        translatesAutoresizingMaskIntoConstraints = false
+        heightAnchor.constraint(equalToConstant: 16).isActive = true
+    }
+    
+    private func createStarImageView(tag: Int) -> UIImageView {
+        let star = Images(style: .normal(name: "greyStarRating"))
+        star.tag = tag
+        return star
+    }
+    
+    private func addStarImageViews(count: Int) {
+        for index in 1...count {
+            let starView = createStarImageView(tag: index)
+            addArrangedSubview(starView)
+        }
+    }
 }
+
