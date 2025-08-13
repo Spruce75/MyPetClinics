@@ -9,12 +9,12 @@ import UIKit
 import MapKit
 
 final class ClinicsMapViewController: UIViewController {
-    
+
     // MARK: - Dependencies
     private let clinicsToDisplay: [VetClinic]
     private let geocodingService: GeocodingServiceProtocol
     private let onClinicSelected: ((VetClinic) -> Void)?
-    
+
     // MARK: - Subviews
     private let mapView: MKMapView = {
         let mapView = MKMapView()
@@ -24,13 +24,38 @@ final class ClinicsMapViewController: UIViewController {
         mapView.register(MKMarkerAnnotationView.self, forAnnotationViewWithReuseIdentifier: "ClinicMarker")
         return mapView
     }()
-    
+
     private lazy var closeButton = Buttons(
         style: .actionButtonStyle(title: "", systemIconName: "xmark"),
         target: self,
         action: #selector(closeTapped)
     )
-    
+
+    // MARK: - Zoom controls
+    private lazy var zoomInButton = Buttons(
+        style: .actionButtonStyle(title: "", systemIconName: "plus"),
+        target: self,
+        action: #selector(zoomInTapped)
+    )
+    private lazy var zoomOutButton = Buttons(
+        style: .actionButtonStyle(title: "", systemIconName: "minus"),
+        target: self,
+        action: #selector(zoomOutTapped)
+    )
+    private let zoomControlsStackView: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .vertical
+        stack.alignment = .fill
+        stack.distribution = .fill
+        stack.spacing = 8
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        return stack
+    }()
+
+    // Ограничения зума (в метрах)
+    private let minimumZoomDistance: CLLocationDistance = 200
+    private let maximumZoomDistance: CLLocationDistance = 500_000
+
     // MARK: - Init
     init(
         clinics: [VetClinic],
@@ -43,7 +68,7 @@ final class ClinicsMapViewController: UIViewController {
         super.init(nibName: nil, bundle: nil)
     }
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
-    
+
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -51,27 +76,51 @@ final class ClinicsMapViewController: UIViewController {
         mapView.delegate = self
         setupViewsAndConstraints()
         addAnnotationsFromClinics()
+
+        if #available(iOS 13.0, *) {
+            let range = MKMapView.CameraZoomRange(
+                minCenterCoordinateDistance: minimumZoomDistance,
+                maxCenterCoordinateDistance: maximumZoomDistance
+            )
+            mapView.setCameraZoomRange(range, animated: false)
+        }
     }
-    
+
     // MARK: - Actions
-    @objc private func closeTapped() { dismiss(animated: true) }
+    @objc private func closeTapped() {
+        if presentingViewController != nil {
+            dismiss(animated: true)
+        } else {
+            navigationController?.popViewController(animated: true)
+        }
+    }
+
+    @objc private func zoomInTapped()  { adjustZoom(byFactor: 0.5) }  // ближе
+    @objc private func zoomOutTapped() { adjustZoom(byFactor: 2.0) }  // дальше
 }
 
 // MARK: - Layout
 private extension ClinicsMapViewController {
     func setupViewsAndConstraints() {
-        [mapView, closeButton].forEach { view.addSubview($0) }
-        
+        [mapView, closeButton, zoomControlsStackView].forEach { view.addSubview($0) }
+        [zoomInButton, zoomOutButton].forEach { zoomControlsStackView.addArrangedSubview($0) }
+
         NSLayoutConstraint.activate([
             mapView.topAnchor.constraint(equalTo: view.topAnchor),
             mapView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             mapView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             mapView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            
+
             closeButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 12),
             closeButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             closeButton.heightAnchor.constraint(equalToConstant: 32),
-            closeButton.widthAnchor.constraint(equalToConstant: 32)
+            closeButton.widthAnchor.constraint(equalToConstant: 32),
+
+            zoomControlsStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            zoomControlsStackView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
+
+            zoomInButton.widthAnchor.constraint(equalToConstant: 32),
+            zoomOutButton.widthAnchor.constraint(equalToConstant: 32)
         ])
     }
 }
@@ -81,7 +130,7 @@ private extension ClinicsMapViewController {
     func addAnnotationsFromClinics() {
         let dispatchGroup = DispatchGroup()
         var createdAnnotations: [MKAnnotation] = []
-        
+
         for clinic in clinicsToDisplay {
             if clinic.hasValidCoordinates {
                 let coordinate = CLLocationCoordinate2D(latitude: clinic.latitude, longitude: clinic.longitude)
@@ -89,27 +138,27 @@ private extension ClinicsMapViewController {
                 createdAnnotations.append(annotation)
             } else {
                 dispatchGroup.enter()
-                geocodingService.geocodeAddressString(clinic.fullAddressString) { coordinate in
+                geocodingService.geocodeAddressString(clinic.fullAddressString) { [weak self] coordinate in
                     defer { dispatchGroup.leave() }
-                    guard let coordinate = coordinate else { return }
+                    guard let _ = self, let coordinate = coordinate else { return }
                     let annotation = ClinicMapAnnotation(clinic: clinic, coordinate: coordinate)
                     createdAnnotations.append(annotation)
                 }
             }
         }
-        
+
         dispatchGroup.notify(queue: .main) { [weak self] in
             guard let self = self, !createdAnnotations.isEmpty else { return }
             self.mapView.addAnnotations(createdAnnotations)
             self.zoomToFit(annotations: createdAnnotations)
         }
     }
-    
+
     func zoomToFit(annotations: [MKAnnotation]) {
         var visibleMapRect = MKMapRect.null
         for annotation in annotations {
-            let mapPoint = MKMapPoint(annotation.coordinate)
-            let tinyRect = MKMapRect(x: mapPoint.x, y: mapPoint.y, width: 0.01, height: 0.01)
+            let point = MKMapPoint(annotation.coordinate)
+            let tinyRect = MKMapRect(x: point.x, y: point.y, width: 0.01, height: 0.01)
             visibleMapRect = visibleMapRect.union(tinyRect)
         }
         mapView.setVisibleMapRect(
@@ -118,48 +167,77 @@ private extension ClinicsMapViewController {
             animated: true
         )
     }
+
+    /// Регулировка зума: <1 — приблизить, >1 — отдалить
+    func adjustZoom(byFactor factor: Double) {
+        let current = mapView.camera.centerCoordinateDistance
+        let clamped = max(min(current * factor, maximumZoomDistance), minimumZoomDistance)
+        let camera = mapView.camera
+        camera.centerCoordinateDistance = clamped
+        mapView.setCamera(camera, animated: true)
+    }
+
+    /// Универсальное открытие деталей: корректно закрывает карту (presented/pushed), затем вызывает колбэк.
+    func openDetails(for clinic: VetClinic) {
+        if presentingViewController != nil {
+            dismiss(animated: true) { [weak self] in
+                self?.onClinicSelected?(clinic)
+            }
+            return
+        }
+        if let navigationController = navigationController {
+            CATransaction.begin()
+            CATransaction.setCompletionBlock { [weak self] in
+                self?.onClinicSelected?(clinic)
+            }
+            navigationController.popViewController(animated: true)
+            CATransaction.commit()
+            return
+        }
+        onClinicSelected?(clinic)
+    }
 }
 
 // MARK: - MKMapViewDelegate
 extension ClinicsMapViewController: MKMapViewDelegate {
+
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
         guard !(annotation is MKUserLocation) else { return nil }
         guard let clinicAnnotation = annotation as? ClinicMapAnnotation else { return nil }
-        
+
         guard let markerView = mapView.dequeueReusableAnnotationView(
             withIdentifier: "ClinicMarker",
             for: clinicAnnotation
         ) as? MKMarkerAnnotationView else {
             return nil
         }
-        
+
         markerView.canShowCallout = true
         markerView.glyphImage = UIImage(systemName: "stethoscope")
-        markerView.markerTintColor = UIColor.systemRed
-        
-        if #available(iOS 17.0, *) {
-            markerView.titleVisibility = .adaptive
-            markerView.subtitleVisibility = .adaptive
-        }
-        
-        let detailLabel = UILabel()
-        detailLabel.numberOfLines = 0
-        detailLabel.font = .systemFont(ofSize: 13)
-        detailLabel.text = clinicAnnotation.clinic.websiteURL.absoluteString
-        markerView.detailCalloutAccessoryView = detailLabel
-        
-        let detailDisclosureButton = UIButton(type: .detailDisclosure)
-        markerView.rightCalloutAccessoryView = detailDisclosureButton
-        
+        markerView.markerTintColor = .systemRed
+        markerView.titleVisibility = .adaptive
+        markerView.subtitleVisibility = .adaptive
+
+        // Делает "плашку" callout кликабельной целиком
+        let calloutButton = UIButton(type: .system)
+        calloutButton.contentEdgeInsets = UIEdgeInsets(top: 4, left: 4, bottom: 4, right: 4)
+        calloutButton.titleLabel?.font = .systemFont(ofSize: 13)
+        calloutButton.setTitle(clinicAnnotation.clinic.websiteURL.absoluteString, for: .normal)
+        calloutButton.addAction(UIAction { [weak self] _ in
+            self?.openDetails(for: clinicAnnotation.clinic)
+        }, for: .touchUpInside)
+        markerView.detailCalloutAccessoryView = calloutButton
+
+        let infoButton = UIButton(type: .detailDisclosure)
+        markerView.rightCalloutAccessoryView = infoButton
+
         return markerView
     }
-    
-    func mapView(
-        _ mapView: MKMapView,
-        annotationView view: MKAnnotationView,
-        calloutAccessoryControlTapped control: UIControl
-    ) {
+
+    func mapView(_ mapView: MKMapView,
+                 annotationView view: MKAnnotationView,
+                 calloutAccessoryControlTapped control: UIControl) {
         guard let clinicAnnotation = view.annotation as? ClinicMapAnnotation else { return }
-        onClinicSelected?(clinicAnnotation.clinic)
+        openDetails(for: clinicAnnotation.clinic)
     }
 }
