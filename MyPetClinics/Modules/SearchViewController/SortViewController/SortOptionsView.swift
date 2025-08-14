@@ -16,7 +16,6 @@ protocol SortOptionsViewControllerDelegate: AnyObject {
 
 final class SortViewController: UIViewController {
     
-    // MARK: - Публичное API
     weak var delegate: SortOptionsViewControllerDelegate?
     var options: [String] = []
     var selectedIndex: Int?

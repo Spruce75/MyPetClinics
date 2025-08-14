@@ -28,7 +28,6 @@ final class Images: UIImageView {
     private func commonInit(style: ImageStyle) {
         translatesAutoresizingMaskIntoConstraints = false
         
-        // сначала настраиваем контент-мод, clips, cornerRadius и констрейнты
         switch style {
         case .imageForBackground:
             contentMode = .scaleAspectFill
@@ -50,7 +49,6 @@ final class Images: UIImageView {
             clipsToBounds = true
         }
         
-        // потом одна и та же строка для установки картинки + фоллбэк:
         let imageName: String
         switch style {
         case .imageForBackground(let name),

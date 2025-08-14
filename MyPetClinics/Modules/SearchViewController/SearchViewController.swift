@@ -25,6 +25,12 @@ final class SearchViewController: UIViewController, SortOptionsViewControllerDel
     
     private let actionsStackView = StackViews(style: .horizontal6StackView)
     
+    private lazy var refreshControl: UIRefreshControl = {
+        let rc = UIRefreshControl()
+        rc.addTarget(self, action: #selector(refreshPulled), for: .valueChanged)
+        return rc
+    }()
+    
     private lazy var sortButton = Buttons(
         style: .actionButtonStyle(
             title: String(localized: "sort_title"),
@@ -105,11 +111,16 @@ final class SearchViewController: UIViewController, SortOptionsViewControllerDel
     private var selectedSortOptionIndex: Int?
     
     // MARK: - Init
-    init(clinicService: VetClinicService = MockVetClinicService()) {
+    
+    init(clinicService: VetClinicService) {
         self.clinicService = clinicService
         super.init(nibName: nil, bundle: nil)
     }
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -128,7 +139,26 @@ final class SearchViewController: UIViewController, SortOptionsViewControllerDel
             self.selectedFilterOptions.removeAll()
             self.filterContentForSearchText(self.searchBar.text ?? "")
         }
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleBookmarksChanged),
+            name: .vetClinicBookmarksDidChange,
+            object: nil
+        )
+        
+        if #available(iOS 10.0, *) {
+            tableView.refreshControl = refreshControl
+        } else {
+            tableView.addSubview(refreshControl)
+        }
     }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        reloadClinicsFromServiceKeepingFilters()
+    }
+    
     
     // MARK: - SortOptionsViewControllerDelegate
     func sortOptionsViewController(
@@ -179,18 +209,12 @@ final class SearchViewController: UIViewController, SortOptionsViewControllerDel
         }
     }
     
-    /// 4 состояния:
-    /// 1) старт (не искали) → bird, только searchBar
-    /// 2) есть результаты → butterfly, actionsStackView + table
-    /// 3) пусто из-за текста (фильтров нет) → dogNothingFound, только заголовок, без панели действий
-    /// 4) пусто из-за фильтров (есть выбранные фильтры) → dogNothingFound, панель действий видна поверх фона + EmptyState с кнопками
     private func updateUIState() {
         let hasFilters = !selectedFilterOptions.isEmpty
         let hasResults = hasSearched && !filteredClinics.isEmpty
         let noResults  = hasSearched && filteredClinics.isEmpty
         
         if !hasSearched {
-            // 1) старт
             backgroundImageView.image = UIImage(named: "bird")
             actionsStackView.isHidden = true
             tableView.isHidden = true
@@ -200,7 +224,6 @@ final class SearchViewController: UIViewController, SortOptionsViewControllerDel
         }
         
         if hasResults {
-            // 2) найдено
             backgroundImageView.image = UIImage(named: "butterfly")
             actionsStackView.isHidden = false
             tableView.isHidden = false
@@ -214,17 +237,14 @@ final class SearchViewController: UIViewController, SortOptionsViewControllerDel
             tableView.isHidden = true
             
             if hasFilters {
-                // 4) пусто из-за фильтров: actions поверх фона, белые надписи
                 actionsStackView.isHidden = false
                 emptyStateView.isHidden = false
                 emptyStateView.configure(mode: .withActions)
                 setActionsForegroundColor(isInverted: true)
                 
-                // пустое состояние — ниже панели действий
                 emptyTopToSearchConstraint?.isActive = false
                 emptyTopToActionsConstraint?.isActive = true
             } else {
-                // 3) пусто из-за текста: без панели действий, только заголовок
                 actionsStackView.isHidden = true
                 emptyStateView.isHidden = false
                 emptyStateView.configure(mode: .textOnly)
@@ -249,26 +269,20 @@ final class SearchViewController: UIViewController, SortOptionsViewControllerDel
             guard let self = self else { return }
             let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
 
-            // OR-группа: типы клиник
             let typeOptions: Set<String> = ["Vet clinic", "Vet hospital", "Private veterinarian"]
             let selectedTypes = self.selectedFilterOptions.intersection(typeOptions)
-
-            // AND-флаги: остальные фильтры
             let need247       = self.selectedFilterOptions.contains("Open 24/7")
             let needWeekend   = self.selectedFilterOptions.contains("Weekend & Holiday Open")
             let needEmergency = self.selectedFilterOptions.contains("Emergency Services")
             let needOnline    = self.selectedFilterOptions.contains("Online Consultation Available")
             
             let results = self.vetClinics.filter { clinic in
-                // текст
                 let matchesText = query.isEmpty
                 || clinic.name.lowercased().contains(query)
                 || clinic.address.lowercased().contains(query)
                 
-                // тип (ИЛИ)
                 let matchesType = selectedTypes.isEmpty || selectedTypes.contains(clinic.type)
                 
-                // прочие (И)
                 let emergencyText = clinic.emergencyInfo?.lowercased() ?? ""
                 let matches247       = !need247       || emergencyText.contains("24/7")
                 let matchesWeekend   = !needWeekend   || emergencyText.contains("weekend")
@@ -291,8 +305,45 @@ final class SearchViewController: UIViewController, SortOptionsViewControllerDel
         }
     }
     
+    private func reloadClinicsFromServiceKeepingFilters() {
+        clinicService.fetchClinics { [weak self] clinics in
+            guard let self = self else { return }
+            DispatchQueue.main.async {
+                self.vetClinics = clinics
+                if self.hasSearched {
+                    self.filterContentForSearchText(self.searchBar.text ?? "")
+                } else {
+                    self.tableView.reloadData()
+                }
+            }
+        }
+    }
+    
     
     // MARK: - Event Handler (Actions)
+    
+    @objc private func refreshPulled() {
+        clinicService.fetchClinics { [weak self] clinics in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                self.vetClinics = clinics
+                
+                if self.hasSearched {
+                    self.filterContentForSearchText(self.searchBar.text ?? "")
+                } else {
+                    self.tableView.reloadData()
+                    self.updateUIState()
+                }
+                
+                self.tableView.refreshControl?.endRefreshing()
+            }
+        }
+    }
+    
+    @objc private func handleBookmarksChanged() {
+        reloadClinicsFromServiceKeepingFilters()
+    }
+    
     @objc private func dismissKeyboard() {
         view.endEditing(true)
     }
@@ -389,7 +440,6 @@ extension SearchViewController {
     private func setupViewsAndConstraints() {
         view.addGestureRecognizer(tapGesture)
         
-        // Порядок добавления важен: фон добавляем первым
         [backgroundImageView, searchBar, actionsStackView, tableView, emptyStateView, loadingView].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
             view.addSubview($0)
@@ -398,41 +448,34 @@ extension SearchViewController {
             actionsStackView.addArrangedSubview($0)
         }
         
-        // Переключаемые top-констрейнты для EmptyStateView
         emptyTopToActionsConstraint = emptyStateView.topAnchor.constraint(equalTo: actionsStackView.bottomAnchor, constant: 24)
         emptyTopToSearchConstraint  = emptyStateView.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 40)
         emptyTopToSearchConstraint?.isActive = true
         
         NSLayoutConstraint.activate([
-            // Background — всегда на весь экран (панель действий рисуется поверх)
             backgroundImageView.topAnchor.constraint(equalTo: view.topAnchor),
             backgroundImageView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             backgroundImageView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             backgroundImageView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             
-            // SearchBar
             searchBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 8),
             searchBar.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             searchBar.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             
-            // Actions
             actionsStackView.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 12),
             actionsStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             actionsStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             actionsStackView.heightAnchor.constraint(equalToConstant: 32),
             
-            // Table
             tableView.topAnchor.constraint(equalTo: actionsStackView.bottomAnchor, constant: 8),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             
-            // Empty state (top — переключаемый выше)
             emptyStateView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             emptyStateView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             emptyStateView.bottomAnchor.constraint(lessThanOrEqualTo: view.bottomAnchor, constant: -16),
             
-            // Loading overlay
             loadingView.topAnchor.constraint(equalTo: view.topAnchor),
             loadingView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             loadingView.leadingAnchor.constraint(equalTo: view.leadingAnchor),

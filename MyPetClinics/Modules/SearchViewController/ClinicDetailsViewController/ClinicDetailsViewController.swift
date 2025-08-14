@@ -91,6 +91,10 @@ final class ClinicDetailsViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
     // MARK: - Lifecycle
     
     override func viewDidLoad() {
@@ -106,6 +110,13 @@ final class ClinicDetailsViewController: UIViewController {
         navigationItem.rightBarButtonItem = UIBarButtonItem(customView: bookmarkButton)
         
         clinicRatingImage.setupRating(rating: clinic.rating)
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleBookmarksChanged),
+            name: .vetClinicBookmarksDidChange,
+            object: nil
+        )
     }
     
     // MARK: - Private functions
@@ -143,6 +154,18 @@ final class ClinicDetailsViewController: UIViewController {
     }
     
     // MARK: - Event Handler (Actions)
+    @objc private func handleBookmarksChanged() {
+        clinicService.fetchClinics { [weak self] clinics in
+            guard let self = self else { return }
+            if let fresh = clinics.first(where: { $0.id == self.clinic.id }) {
+                DispatchQueue.main.async {
+                    self.clinic = fresh
+                    self.bookmarkButton.setBookmarked(fresh.isBookmarked)
+                }
+            }
+        }
+    }
+    
     @objc private func backTapped() {
         navigationController?.popViewController(animated: true)
     }
@@ -185,7 +208,7 @@ final class ClinicDetailsViewController: UIViewController {
     }
     
     @objc private func bookingTapped() {
-        // TODO: онлайн-бронирование (открыть сайт или форму)
+        
     }
 }
 
@@ -235,7 +258,6 @@ extension ClinicDetailsViewController {
                 constant: -20
             ),
             
-            // рейтинг звёзд под шапкой по центру
             clinicRatingImage.topAnchor.constraint(
                 equalTo: mainStackView.bottomAnchor,
                 constant: 24
@@ -244,7 +266,6 @@ extension ClinicDetailsViewController {
                 equalTo: view.centerXAnchor
             ),
             
-            // описание под рейтингом
             descriptionLabel.topAnchor.constraint(
                 equalTo: clinicRatingImage.bottomAnchor,
                 constant: 24
@@ -258,7 +279,6 @@ extension ClinicDetailsViewController {
                 constant: -20
             ),
             
-            // меню под описанием
             menuStackView.topAnchor.constraint(
                 equalTo: descriptionLabel.bottomAnchor,
                 constant: 24

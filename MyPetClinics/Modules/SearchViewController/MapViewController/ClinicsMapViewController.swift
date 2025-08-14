@@ -52,7 +52,6 @@ final class ClinicsMapViewController: UIViewController {
         return stack
     }()
 
-    // Ограничения зума (в метрах)
     private let minimumZoomDistance: CLLocationDistance = 200
     private let maximumZoomDistance: CLLocationDistance = 500_000
 
@@ -168,7 +167,6 @@ private extension ClinicsMapViewController {
         )
     }
 
-    /// Регулировка зума: <1 — приблизить, >1 — отдалить
     func adjustZoom(byFactor factor: Double) {
         let current = mapView.camera.centerCoordinateDistance
         let clamped = max(min(current * factor, maximumZoomDistance), minimumZoomDistance)
@@ -177,7 +175,6 @@ private extension ClinicsMapViewController {
         mapView.setCamera(camera, animated: true)
     }
 
-    /// Универсальное открытие деталей: корректно закрывает карту (presented/pushed), затем вызывает колбэк.
     func openDetails(for clinic: VetClinic) {
         if presentingViewController != nil {
             dismiss(animated: true) { [weak self] in
@@ -199,41 +196,121 @@ private extension ClinicsMapViewController {
 }
 
 // MARK: - MKMapViewDelegate
-extension ClinicsMapViewController: MKMapViewDelegate {
+//extension ClinicsMapViewController: MKMapViewDelegate {
+//
+//    func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
+//        guard !(annotation is MKUserLocation) else { return nil }
+//        guard let clinicAnnotation = annotation as? ClinicMapAnnotation else { return nil }
+//
+//        guard let markerView = mapView.dequeueReusableAnnotationView(
+//            withIdentifier: "ClinicMarker",
+//            for: clinicAnnotation
+//        ) as? MKMarkerAnnotationView else {
+//            return nil
+//        }
+//
+//        markerView.canShowCallout = true
+//        markerView.glyphImage = UIImage(systemName: "stethoscope")
+//        markerView.markerTintColor = .systemRed
+//        markerView.titleVisibility = .adaptive
+//        markerView.subtitleVisibility = .adaptive
+//        
+//        let calloutButton: UIButton
+//        let tapAction = UIAction { [weak self] _ in
+//            self?.openDetails(for: clinicAnnotation.clinic)
+//        }
+//        
+//        if #available(iOS 15.0, *) {
+//            var buttonConfiguration = UIButton.Configuration.plain()
+//            buttonConfiguration.contentInsets = NSDirectionalEdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4)
+//            buttonConfiguration.title = clinicAnnotation.clinic.websiteURL.absoluteString
+//            
+//            var attributedTitle = AttributedString(buttonConfiguration.title ?? "")
+//            attributedTitle.font = .systemFont(ofSize: 13)
+//            buttonConfiguration.attributedTitle = attributedTitle
+//            buttonConfiguration.baseForegroundColor = .systemBlue
+//            
+//            calloutButton = UIButton(configuration: buttonConfiguration, primaryAction: tapAction)
+//        } else {
+//            let legacyButton = UIButton(type: .system)
+//            legacyButton.contentEdgeInsets = UIEdgeInsets(top: 4, left: 4, bottom: 4, right: 4)
+//            legacyButton.titleLabel?.font = .systemFont(ofSize: 13)
+//            legacyButton.setTitle(clinicAnnotation.clinic.websiteURL.absoluteString, for: .normal)
+//            legacyButton.addAction(tapAction, for: .touchUpInside)
+//            calloutButton = legacyButton
+//        }
+//
+//        markerView.detailCalloutAccessoryView = calloutButton
+//
+//        let infoButton = UIButton(type: .detailDisclosure)
+//        markerView.rightCalloutAccessoryView = infoButton
+//
+//        return markerView
+//    }
+//
+//    func mapView(_ mapView: MKMapView,
+//                 annotationView view: MKAnnotationView,
+//                 calloutAccessoryControlTapped control: UIControl) {
+//        guard let clinicAnnotation = view.annotation as? ClinicMapAnnotation else { return }
+//        openDetails(for: clinicAnnotation.clinic)
+//    }
+//}
 
+extension ClinicsMapViewController: MKMapViewDelegate {
+    
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
         guard !(annotation is MKUserLocation) else { return nil }
         guard let clinicAnnotation = annotation as? ClinicMapAnnotation else { return nil }
-
+        
         guard let markerView = mapView.dequeueReusableAnnotationView(
             withIdentifier: "ClinicMarker",
             for: clinicAnnotation
         ) as? MKMarkerAnnotationView else {
             return nil
         }
-
+        
         markerView.canShowCallout = true
         markerView.glyphImage = UIImage(systemName: "stethoscope")
         markerView.markerTintColor = .systemRed
         markerView.titleVisibility = .adaptive
         markerView.subtitleVisibility = .adaptive
-
-        // Делает "плашку" callout кликабельной целиком
-        let calloutButton = UIButton(type: .system)
-        calloutButton.contentEdgeInsets = UIEdgeInsets(top: 4, left: 4, bottom: 4, right: 4)
-        calloutButton.titleLabel?.font = .systemFont(ofSize: 13)
-        calloutButton.setTitle(clinicAnnotation.clinic.websiteURL.absoluteString, for: .normal)
-        calloutButton.addAction(UIAction { [weak self] _ in
+        
+        let websiteTitle = clinicAnnotation.clinic.websiteURL.absoluteString
+        
+        let tapAction = UIAction { [weak self] _ in
             self?.openDetails(for: clinicAnnotation.clinic)
-        }, for: .touchUpInside)
+        }
+        
+        let calloutButton: UIButton
+        if #available(iOS 15.0, *) {
+            var calloutButtonConfiguration = UIButton.Configuration.plain()
+            calloutButtonConfiguration.contentInsets = NSDirectionalEdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4)
+            calloutButtonConfiguration.title = websiteTitle
+            
+            var calloutAttributedTitle = AttributedString(websiteTitle)
+            calloutAttributedTitle.font = .systemFont(ofSize: 13)
+            calloutButtonConfiguration.attributedTitle = calloutAttributedTitle
+            calloutButtonConfiguration.baseForegroundColor = .systemBlue
+            
+            calloutButton = UIButton(configuration: calloutButtonConfiguration, primaryAction: tapAction)
+        } else {
+            let legacyCalloutButton = UIButton(type: .system)
+            legacyCalloutButton.contentEdgeInsets = UIEdgeInsets(top: 4, left: 4, bottom: 4, right: 4)
+            legacyCalloutButton.titleLabel?.font = .systemFont(ofSize: 13)
+            legacyCalloutButton.setTitle(websiteTitle, for: .normal)
+            legacyCalloutButton.setTitleColor(.systemBlue, for: .normal)
+            legacyCalloutButton.addAction(tapAction, for: .touchUpInside)
+            calloutButton = legacyCalloutButton
+        }
+        
         markerView.detailCalloutAccessoryView = calloutButton
-
+        
         let infoButton = UIButton(type: .detailDisclosure)
         markerView.rightCalloutAccessoryView = infoButton
-
+        
         return markerView
     }
-
+    
     func mapView(_ mapView: MKMapView,
                  annotationView view: MKAnnotationView,
                  calloutAccessoryControlTapped control: UIControl) {

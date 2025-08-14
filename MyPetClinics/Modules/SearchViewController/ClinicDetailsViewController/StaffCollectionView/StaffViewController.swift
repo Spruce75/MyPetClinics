@@ -91,12 +91,11 @@ final class StaffViewController: UIViewController {
         placeholderLabel.isHidden = !isEmpty
         clinicTitle.textColor = isEmpty ? .white : .label
         
-        // Appearance для заголовка навбара
         let appearance = UINavigationBarAppearance()
         if isEmpty {
             appearance.configureWithTransparentBackground()
             appearance.titleTextAttributes = [.foregroundColor: UIColor.white]
-            navigationController?.navigationBar.barStyle = .black // status bar icons become light
+            navigationController?.navigationBar.barStyle = .black
         } else {
             appearance.configureWithDefaultBackground()
             appearance.titleTextAttributes = [.foregroundColor: UIColor.label]
@@ -111,7 +110,6 @@ final class StaffViewController: UIViewController {
             navigationController?.navigationBar.scrollEdgeAppearance = appearance
         }
         
-        // 👇 Принудительная окраска кнопки Back на тёмном фоне
         if isEmpty {
             if originalTintColor == nil {
                 originalTintColor = navigationController?.navigationBar.tintColor

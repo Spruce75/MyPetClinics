@@ -9,6 +9,8 @@ import UIKit
 
 final class TabBarViewController: UITabBarController {
     
+    private let clinicService: VetClinicService = PersistentVetClinicService()
+    
     // MARK: - Private Properties
     private lazy var profileVC = createNavController(
         root: ProfileViewController(),
@@ -18,14 +20,14 @@ final class TabBarViewController: UITabBarController {
     )
 
     private lazy var searchVC = createNavController(
-        root: SearchViewController(),
+        root: SearchViewController(clinicService: clinicService),
         titleKey: "search_title",
         image: "searchNoActiveTabbar",
         selectedImage: "searchActiveTabbar"
     )
 
     private lazy var myPetClinicsVC = createNavController(
-        root: MyPetClinicsViewController(),
+        root: MyPetClinicsViewController(clinicService: clinicService),
         titleKey: "myPetClinics_title",
         image: "myPetClinicsNoActiveTabbar",
         selectedImage: "myPetClinicsActiveTabbar"
@@ -86,4 +88,3 @@ final class TabBarViewController: UITabBarController {
         selectedIndex = 1
     }
 }
-

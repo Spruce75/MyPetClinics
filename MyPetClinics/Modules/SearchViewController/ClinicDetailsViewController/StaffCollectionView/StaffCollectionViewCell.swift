@@ -28,9 +28,7 @@ final class StaffCollectionViewCell: UICollectionViewCell {
     func configure(with member: StaffMember) {
         nameLabel.text  = member.name
         
-        // единый placeholder
         let placeholder = UIImage(named: "no photo")
-        // если нашёлся реальный ассет ─ берём его, иначе placeholder
         imageView.image = UIImage(named: member.imageName) ?? placeholder
     }
 }

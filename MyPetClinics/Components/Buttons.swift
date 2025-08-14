@@ -49,6 +49,7 @@ final class Buttons: UIButton {
         setTitleColor(.label, for: .normal)
         
         switch currentStyle {
+            
         case .actionButtonStyle(let title, let iconName):
             titleLabel?.font = .systemFont(ofSize: 17)
             setTitle(title, for: .normal)
@@ -57,8 +58,14 @@ final class Buttons: UIButton {
             
         case .toggleButtonStyle(let normal, let selected):
             heightAnchor.constraint(equalToConstant: 32).isActive = true
-            setImage(UIImage(systemName: normal), for: .normal)
-            setImage(UIImage(systemName: selected), for: .selected)
+
+            let normalImage = UIImage(systemName: normal)?
+                .withTintColor(.label, renderingMode: .alwaysOriginal)
+            let selectedImage = UIImage(systemName: selected)?
+                .withTintColor(.systemBlue, renderingMode: .alwaysOriginal)
+
+            setImage(normalImage, for: .normal)
+            setImage(selectedImage, for: .selected)
             
         case .socialNetworkStyle(let iconName):
             guard let image = UIImage(named: iconName) else { return }

@@ -19,9 +19,7 @@ extension UIColor {
 extension UIColor {
     static let searchBarBackgroundColor = UIColor(hex: 0x767680, alpha: 0.12)
     static let searchBarBackgroundColorDark = UIColor(hex: 0x767680, alpha: 0.24)
-    
-//    static let blackDay = UIColor(hex: 0x1A1B22)
-//    static let blackNight = UIColor(hex: 0xFFFFFF)
+
     
     static let gradient = [
         UIColor(hex: 0xFD4C49),

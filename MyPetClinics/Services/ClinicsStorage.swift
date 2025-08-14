@@ -13,7 +13,7 @@ final class ClinicsStorage {
   private(set) var clinics: [VetClinic] = []
 
   private init() {
-    // инициализация, если нужно
+
   }
 
   func fetchClinics(completion: @escaping () -> Void) {

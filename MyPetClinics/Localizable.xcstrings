@@ -227,6 +227,28 @@
         }
       }
     },
+    "no_bookmarks_message" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Tap the bookmark icon on a clinic to add it here."
+          }
+        }
+      }
+    },
+    "no_bookmarks_title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "No clinics yet"
+          }
+        }
+      }
+    },
     "nothing_found" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -340,6 +362,9 @@
           }
         }
       }
+    },
+    "Remove" : {
+
     },
     "search_placeholder" : {
       "extractionState" : "manual",

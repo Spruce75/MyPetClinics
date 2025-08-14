@@ -8,8 +8,8 @@
 import UIKit
 
 enum EmptyStateMode {
-    case textOnly      // только заголовок
-    case withActions   // заголовок + сабтайтл + кнопки
+    case textOnly
+    case withActions
 }
 
 final class EmptyStateView: UIView {
@@ -29,7 +29,7 @@ final class EmptyStateView: UIView {
             style: .ordinaryText17LabelStyle,
             text: String(localized: "try_changing_filters_or_query")
         )
-        label.textColor = .white
+        label.textColor = .secondaryLabel
         label.textAlignment = .center
         return label
     }()
@@ -46,9 +46,8 @@ final class EmptyStateView: UIView {
         action: #selector(clearFiltersTapped)
     )
     
-    // Контейнеры: вертикальный стек + горизонтальный ряд для кнопок
     private let verticalStack = StackViews(style: .verticalCenterStackView)
-    private let buttonsRowStack = StackViews(style: .horizontal6StackView) // fillEqually
+    private let buttonsRowStack = StackViews(style: .horizontal6StackView)
     
     // MARK: - Init
     override init(frame: CGRect) {
@@ -64,6 +63,17 @@ final class EmptyStateView: UIView {
         buttonsRowStack.isHidden = !showActions
     }
     
+    func setTexts(title: String, subtitle: String? = nil) {
+        titleLabel.text = title
+        subtitleLabel.text = subtitle
+        subtitleLabel.isHidden = (subtitle?.isEmpty ?? true)
+    }
+    
+    func setTextColors(primary: UIColor = .label, secondary: UIColor = .secondaryLabel) {
+        titleLabel.textColor = primary
+        subtitleLabel.textColor = secondary
+    }
+    
     // MARK: - Actions
     @objc private func changeFiltersTapped() { onChangeFiltersTapped?() }
     @objc private func clearFiltersTapped()  { onClearFiltersTapped?() }
@@ -74,12 +84,10 @@ private extension EmptyStateView {
     func setupViewsAndConstraints() {
         translatesAutoresizingMaskIntoConstraints = false
         
-        // Кнопки в ряд
         buttonsRowStack.isHidden = true
         buttonsRowStack.addArrangedSubview(changeFiltersButton)
         buttonsRowStack.addArrangedSubview(clearFiltersButton)
         
-        // Основной вертикальный стек
         verticalStack.spacing = 12
         [titleLabel, subtitleLabel, buttonsRowStack].forEach {
             verticalStack.addArrangedSubview($0)

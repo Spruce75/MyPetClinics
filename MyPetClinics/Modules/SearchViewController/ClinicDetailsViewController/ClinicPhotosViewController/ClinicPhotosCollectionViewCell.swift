@@ -25,9 +25,7 @@ final class ClinicPhotosCollectionViewCell: UICollectionViewCell {
     // MARK: - Public Methods
     func configure(with clinicPhoto: String?) {
         
-        // единый placeholder
         let placeholder = UIImage(named: "no photo")
-        // если нашёлся реальный ассет ─ берём его, иначе placeholder
         
         guard
             let name = clinicPhoto,
@@ -53,7 +51,6 @@ extension ClinicPhotosCollectionViewCell {
             imageView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
             
             imageView.widthAnchor.constraint(equalTo: contentView.widthAnchor),
-            // высота = 75% от ширины
             imageView.heightAnchor.constraint(equalTo: contentView.widthAnchor, multiplier: 0.75)
         ])
     }

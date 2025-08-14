@@ -74,11 +74,9 @@ final class SearchResultTableViewCell: UITableViewCell {
         for clinic: VetClinic,
         onToggle: @escaping (VetClinic) -> ()
     ) {
-        // Remove old action if any
         if let old = bookmarkAction {
             bookmarkButton.removeAction(old, for: .touchUpInside)
         }
-        // Create new action capturing this clinic
         let action = UIAction { [weak bookmarkButton] _ in
             guard let btn = bookmarkButton else { return }
             btn.isSelected.toggle()
