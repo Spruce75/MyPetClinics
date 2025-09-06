@@ -175,6 +175,9 @@ final class PetProfilesStorage: NSObject {
             weightInKilograms: formData.weightInKilograms,
             identificationType: formData.identificationType,
             identificationNumber: formData.identificationNumber,
+            
+            avatarImageData: formData.avatarImageData,
+            
             avatarFileName: formData.avatarFileName,
             createdAt: now,
             updatedAt: now
@@ -246,6 +249,9 @@ final class PetProfilesStorage: NSObject {
                     weightInKilograms: data.weightInKilograms,
                     identificationType: data.identificationType,
                     identificationNumber: data.identificationNumber,
+                    
+                    avatarImageData: data.avatarImageData,
+                    
                     avatarFileName: data.avatarFileName,
                     createdAt: originalCreatedAt,
                     updatedAt: now

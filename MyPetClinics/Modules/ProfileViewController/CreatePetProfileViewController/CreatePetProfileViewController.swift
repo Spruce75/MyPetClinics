@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import PhotosUI
 
 final class CreatePetProfileViewController: UIViewController {
     
@@ -20,6 +21,7 @@ final class CreatePetProfileViewController: UIViewController {
         weightInKilograms: nil,
         identificationType: .none,
         identificationNumber: nil,
+        avatarImageData: nil,
         avatarFileName: nil
     )
     
@@ -77,6 +79,14 @@ final class CreatePetProfileViewController: UIViewController {
         action: #selector(photosTapped)
     )
     
+    private let avatarPreviewImageView: UIImageView = {
+        let view = UIImageView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.contentMode = .scaleAspectFill
+        view.clipsToBounds = true
+        return view
+    }()
+    
     private let bottomBarContainerView = UIView()
     private lazy var doneButton = Buttons(
         style: .primary20new(title: String(localized: "done_title")),
@@ -91,6 +101,8 @@ final class CreatePetProfileViewController: UIViewController {
         view.backgroundColor = .systemBackground
         setupNavigation()
         setupViewsAndConstraints()
+        configurePhotoPicking()
+        refreshAvatarPreview()
     }
     
     // MARK: - Private
@@ -116,6 +128,30 @@ final class CreatePetProfileViewController: UIViewController {
         ])
         return container
     }
+    
+    private func configurePhotoPicking() {
+        let tap = UITapGestureRecognizer(target: self, action: #selector(pickPhotoTapped))
+        photoContainerView.isUserInteractionEnabled = true
+        photoContainerView.addGestureRecognizer(tap)
+    }
+    
+    private func handlePickedImage(_ image: UIImage) {
+        let resized = image.resizedToFit(maxDimension: 1024)
+        let data = resized.jpegData(compressionQuality: 0.8)
+        formData.avatarImageData = data
+        refreshAvatarPreview()
+    }
+    
+    private func refreshAvatarPreview() {
+        if let data = formData.avatarImageData, let img = UIImage(data: data) {
+            avatarPreviewImageView.image = img
+            photoTitleLabel.isHidden = true
+        } else {
+            avatarPreviewImageView.image = UIImage(named: "no photo")
+            photoTitleLabel.isHidden = false
+        }
+    }
+    
     
     // MARK: - Event Handler (Actions)
     @objc private func closeTapped() {
@@ -193,6 +229,23 @@ final class CreatePetProfileViewController: UIViewController {
     @objc private func healthRecordsTapped(){ /* TODO */ }
     @objc private func notesTapped()       { /* TODO */ }
     @objc private func photosTapped()      { /* TODO */ }
+    
+    @objc private func pickPhotoTapped() {
+        if #available(iOS 14, *) {
+            var config = PHPickerConfiguration(photoLibrary: .shared())
+            config.filter = .images
+            config.selectionLimit = 1
+            let picker = PHPickerViewController(configuration: config)
+            picker.delegate = self
+            present(picker, animated: true)
+        } else {
+            let picker = UIImagePickerController()
+            picker.sourceType = .photoLibrary
+            picker.delegate = self
+            picker.allowsEditing = false
+            present(picker, animated: true)
+        }
+    }
 }
 
 // MARK: - Layout
@@ -210,6 +263,7 @@ extension CreatePetProfileViewController {
         
         // Контент
         contentContainerView.addSubview(photoContainerView)
+        photoContainerView.addSubview(avatarPreviewImageView)
         photoContainerView.addSubview(photoTitleLabel)
         contentContainerView.addSubview(formStackView)
         
@@ -239,6 +293,11 @@ extension CreatePetProfileViewController {
             photoContainerView.widthAnchor.constraint(equalToConstant: 112),
             photoContainerView.heightAnchor.constraint(equalToConstant: 112),
             
+            avatarPreviewImageView.topAnchor.constraint(equalTo: photoContainerView.topAnchor),
+            avatarPreviewImageView.leadingAnchor.constraint(equalTo: photoContainerView.leadingAnchor),
+            avatarPreviewImageView.trailingAnchor.constraint(equalTo: photoContainerView.trailingAnchor),
+            avatarPreviewImageView.bottomAnchor.constraint(equalTo: photoContainerView.bottomAnchor),
+            
             photoTitleLabel.centerXAnchor.constraint(equalTo: photoContainerView.centerXAnchor),
             photoTitleLabel.centerYAnchor.constraint(equalTo: photoContainerView.centerYAnchor),
             
@@ -256,6 +315,9 @@ extension CreatePetProfileViewController {
             
             doneButton.widthAnchor.constraint(lessThanOrEqualToConstant: 300)
         ])
+        photoContainerView.layer.masksToBounds = true
+        photoContainerView.layer.cornerRadius = 56
+        avatarPreviewImageView.layer.cornerRadius = 56
     }
 }
 
@@ -279,4 +341,27 @@ extension CreatePetProfileViewController: PetGeneralInfoViewControllerDelegate {
     }
 }
 
+@available(iOS 14, *)
+extension CreatePetProfileViewController: PHPickerViewControllerDelegate {
+    func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
+        dismiss(animated: true)
+        guard let itemProvider = results.first?.itemProvider,
+              itemProvider.canLoadObject(ofClass: UIImage.self) else { return }
+        itemProvider.loadObject(ofClass: UIImage.self) { [weak self] object, _ in
+            guard let self, let image = object as? UIImage else { return }
+            DispatchQueue.main.async { self.handlePickedImage(image) }
+        }
+    }
+}
 
+extension CreatePetProfileViewController: UINavigationControllerDelegate, UIImagePickerControllerDelegate {
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        dismiss(animated: true)
+    }
+    func imagePickerController(_ picker: UIImagePickerController,
+                               didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        dismiss(animated: true)
+        let image = (info[.editedImage] ?? info[ .originalImage]) as? UIImage
+        if let image { handlePickedImage(image) }
+    }
+}

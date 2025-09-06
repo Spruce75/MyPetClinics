@@ -40,6 +40,7 @@ final class ProfileViewController: UIViewController {
     // MARK: - Data
     private var profiles: [PetProfile] = []
     private var pets: [Pet] = []
+    private var orderedIDs: [UUID] = []
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -65,11 +66,33 @@ final class ProfileViewController: UIViewController {
     }
     
     // MARK: - Private
+//    private func reloadPetsFromStorage() {
+//        profiles = PetProfilesStorage.shared.fetchAll()
+//        pets = profiles.map(Pet.init(from:))
+//        tableView.reloadData()
+//    }
+    
     private func reloadPetsFromStorage() {
-        profiles = PetProfilesStorage.shared.fetchAll()
+        let fetched = PetProfilesStorage.shared.fetchAll()
+        let dict = Dictionary(uniqueKeysWithValues: fetched.map { ($0.id, $0) })
+        
+        if orderedIDs.isEmpty {
+            // фиксируем первоначальный порядок и далее его держим
+            orderedIDs = fetched.map { $0.id }
+        } else {
+            // убираем из порядка удалённых
+            orderedIDs.removeAll { dict[$0] == nil }
+            // добавляем в конец новых (созданных) по порядку прихода
+            for p in fetched where !orderedIDs.contains(p.id) {
+                orderedIDs.append(p.id)
+            }
+        }
+        
+        profiles = orderedIDs.compactMap { dict[$0] }
         pets = profiles.map(Pet.init(from:))
         tableView.reloadData()
     }
+    
     
     private func setupTitle() {
         let titleLabel = Labels(
@@ -235,6 +258,7 @@ private extension ProfileViewController {
             
             // Оптимистично анимируем удаление строки
             let removedPet = self.pets.remove(at: indexPath.row)
+            self.orderedIDs.removeAll { $0 == removedPet.id }
             self.tableView.deleteRows(at: [indexPath], with: .automatic)
             
             PetProfilesStorage.shared.delete(by: removedPet.id) { success in

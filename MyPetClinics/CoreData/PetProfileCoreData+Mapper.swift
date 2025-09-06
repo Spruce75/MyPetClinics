@@ -60,6 +60,9 @@ extension PetProfileCoreData {
             weightInKilograms: weightInKilogramsValue,
             identificationType: PetIdentificationType(rawValue: identificationTypeRaw) ?? .none,
             identificationNumber: identificationNumber,
+            
+            avatarImageData: avatarImageData,
+            
             avatarFileName: avatarFileName,
             createdAt: createdAt,
             updatedAt: updatedAt
@@ -88,6 +91,7 @@ extension PetProfileCoreData {
                 weightInKilograms: weightInKilogramsValue,
                 identificationType: identificationType.flatMap(PetIdentificationType.init(rawValue:)) ?? .none,
                 identificationNumber: identificationNumber,
+                avatarImageData: avatarImageData,
                 avatarFileName: avatarFileName,
                 createdAt: createdAt ?? Date(),
                 updatedAt: updatedAt ?? Date()
@@ -109,6 +113,9 @@ extension PetProfileCoreData {
         weightInKilogramsValue = domain.weightInKilograms
         identificationType = domain.identificationType.rawValue
         identificationNumber = domain.identificationNumber
+        
+        avatarImageData = domain.avatarImageData
+        
         avatarFileName = domain.avatarFileName
         createdAt = domain.createdAt
         updatedAt = domain.updatedAt

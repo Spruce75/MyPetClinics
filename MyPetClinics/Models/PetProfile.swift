@@ -71,6 +71,7 @@ struct PetProfile {
     var identificationType: PetIdentificationType
     var identificationNumber: String?
 
+    var avatarImageData: Data?
     var avatarFileName: String?
 
     let createdAt: Date

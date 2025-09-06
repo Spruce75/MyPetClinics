@@ -24,6 +24,7 @@ struct PetProfileFormData {
     var identificationType: PetIdentificationType
     var identificationNumber: String?
 
+    var avatarImageData: Data?
     var avatarFileName: String?
 }
 
@@ -40,6 +41,7 @@ extension PetProfileFormData {
             weightInKilograms: profile.weightInKilograms,
             identificationType: profile.identificationType,
             identificationNumber: profile.identificationNumber,
+            avatarImageData: profile.avatarImageData,
             avatarFileName: profile.avatarFileName
         )
     }

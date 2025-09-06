@@ -6,15 +6,23 @@
 //
 
 import UIKit
+import PhotosUI
 
 /// Экран-резюме после заполнения General info.
 /// Показывает имя/аватар слева и сводку полей, ниже — секции Owners/Nutrition/... и кнопку Done для сохранения.
 final class ReviewPetProfileViewController: UIViewController {
 
-    // MARK: Inputs
     private(set) var formData: PetProfileFormData
     var onEditGeneralInfo: (() -> Void)?
     var showsDoneButton: Bool = true
+    
+    private let headerHStack: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .horizontal
+        stack.alignment = .center
+        stack.spacing = 16
+        return stack
+    }()
     
     private let editingProfileID: UUID?
     private let scrollView = UIScrollView()
@@ -98,6 +106,7 @@ final class ReviewPetProfileViewController: UIViewController {
         view.backgroundColor = .systemBackground
         setupNav()
         setupLayout()
+        wireAvatarPicking()
         refreshSummary()
         
         if !showsDoneButton {
@@ -142,26 +151,39 @@ final class ReviewPetProfileViewController: UIViewController {
             action: #selector(editGeneralInfoTapped)
         )
     }
+    
+    private func wireAvatarPicking() {
+        avatarImageView.isUserInteractionEnabled = true
+        let tap = UITapGestureRecognizer(target: self, action: #selector(changeAvatarTapped))
+        avatarImageView.addGestureRecognizer(tap)
+    }
+    
+    private func handlePickedImage(_ image: UIImage) {
+        let resized = image.resizedToFit(maxDimension: 1024)
+        let data = resized.jpegData(compressionQuality: 0.8)
+        formData.avatarImageData = data
+        refreshSummary()
+    }
 
     // MARK: Layout
     private func setupLayout() {
-        // Scroll
+        // Scroll view
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(scrollView)
 
-        // Контейнер контента внутри скролла (будет одной ширины с экраном)
-        let contentView = UIView()
-        contentView.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.addSubview(contentView)
+        // Контейнер контента внутри скролла (одной ширины с экраном)
+        let contentContainerView = UIView()
+        contentContainerView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.addSubview(contentContainerView)
 
-        // Стек с контентом
+        // Вертикальный стек всего содержимого
         contentStack.axis = .vertical
         contentStack.alignment = .fill
         contentStack.spacing = 16
         contentStack.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(contentStack)
+        contentContainerView.addSubview(contentStack)
 
-        // Добавляем секции в стек
+        // Секции в основной стек
         [headerContainerView, summaryCardView, formStackView].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
             contentStack.addArrangedSubview($0)
@@ -174,88 +196,96 @@ final class ReviewPetProfileViewController: UIViewController {
         doneButton.translatesAutoresizingMaskIntoConstraints = false
         bottomBarContainerView.addSubview(doneButton)
 
-        // --- ВНУТРЕННИЕ КОНСТРЕЙНТЫ header/summary как раньше ---
+        // ---------- Header (аватар + имя по центру) ----------
         avatarImageView.clipsToBounds = true
-        let avatarSize: CGFloat = 64
-        avatarImageView.layer.cornerRadius = avatarSize / 2
+        let avatarSide: CGFloat = 80
+        avatarImageView.layer.cornerRadius = avatarSide / 2
 
-        [avatarImageView, nameTitleLabel].forEach {
-            $0.translatesAutoresizingMaskIntoConstraints = false
-            headerContainerView.addSubview($0)
-        }
+        headerHStack.translatesAutoresizingMaskIntoConstraints = false
+        headerContainerView.addSubview(headerHStack)
 
+        // элементы в стек
+        avatarImageView.translatesAutoresizingMaskIntoConstraints = false
+        nameTitleLabel.translatesAutoresizingMaskIntoConstraints = false
+        headerHStack.addArrangedSubview(avatarImageView)
+        headerHStack.addArrangedSubview(nameTitleLabel)
+
+        // чтобы длинные имена не распирали вширь
+        nameTitleLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        nameTitleLabel.lineBreakMode = .byTruncatingTail
+
+        // ---------- Summary card ----------
         summaryStackView.translatesAutoresizingMaskIntoConstraints = false
         summaryCardView.addSubview(summaryStackView)
 
-        // «Текстовые» контейнеры (как было)
-        let primaryContainer = UIView()
-        let secondaryContainer = UIView()
-        [primaryContainer, secondaryContainer].forEach {
+        // «Текстовые» контейнеры в summary
+        let primaryTextRowContainer = UIView()
+        let secondaryTextRowContainer = UIView()
+        [primaryTextRowContainer, secondaryTextRowContainer].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
             $0.heightAnchor.constraint(equalToConstant: 44).isActive = true
         }
         primarySummaryLabel.translatesAutoresizingMaskIntoConstraints = false
         secondarySummaryLabel.translatesAutoresizingMaskIntoConstraints = false
-        primaryContainer.addSubview(primarySummaryLabel)
-        secondaryContainer.addSubview(secondarySummaryLabel)
+        primaryTextRowContainer.addSubview(primarySummaryLabel)
+        secondaryTextRowContainer.addSubview(secondarySummaryLabel)
 
-        // --- АКТИВАЦИЯ КОНСТРЕЙНТОВ ---
-
+        // ---------- Активируем констрейнты ----------
         let readable = bottomBarContainerView.readableContentGuide
         NSLayoutConstraint.activate([
-            // ScrollView занимает всё над нижним баром
+            // Scroll занимает всё над нижним баром
             scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             scrollView.bottomAnchor.constraint(equalTo: bottomBarContainerView.topAnchor),
 
-            // contentView полностью описывает контент скролла
-            contentView.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
-            contentView.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor),
-            contentView.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor),
-            contentView.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor),
+            // Контент скролла
+            contentContainerView.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
+            contentContainerView.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor),
+            contentContainerView.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor),
+            contentContainerView.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor),
 
-            // ширина контента = ширина экрана (без горизонтального скролла)
-            contentView.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor),
+            // Ширина контента = ширине экрана
+            contentContainerView.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor),
 
-            // стек внутри contentView с отступами
-            contentStack.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 16),
-            contentStack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            contentStack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            contentStack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -16),
+            // Отступы основного стека
+            contentStack.topAnchor.constraint(equalTo: contentContainerView.topAnchor, constant: 16),
+            contentStack.leadingAnchor.constraint(equalTo: contentContainerView.leadingAnchor, constant: 16),
+            contentStack.trailingAnchor.constraint(equalTo: contentContainerView.trailingAnchor, constant: -16),
+            contentStack.bottomAnchor.constraint(equalTo: contentContainerView.bottomAnchor, constant: -16),
 
-            // Внутренние констрейнты header
-            avatarImageView.leadingAnchor.constraint(equalTo: headerContainerView.leadingAnchor),
-            avatarImageView.topAnchor.constraint(equalTo: headerContainerView.topAnchor),
-            avatarImageView.widthAnchor.constraint(equalToConstant: avatarSize),
-            avatarImageView.heightAnchor.constraint(equalToConstant: avatarSize),
+            // Header по центру
+            headerHStack.topAnchor.constraint(equalTo: headerContainerView.topAnchor),
+            headerHStack.bottomAnchor.constraint(equalTo: headerContainerView.bottomAnchor),
+            headerHStack.centerXAnchor.constraint(equalTo: headerContainerView.centerXAnchor),
+            headerHStack.leadingAnchor.constraint(greaterThanOrEqualTo: headerContainerView.leadingAnchor),
+            headerHStack.trailingAnchor.constraint(lessThanOrEqualTo: headerContainerView.trailingAnchor),
 
-            nameTitleLabel.leadingAnchor.constraint(equalTo: avatarImageView.trailingAnchor, constant: 16),
-            nameTitleLabel.centerYAnchor.constraint(equalTo: avatarImageView.centerYAnchor),
-            nameTitleLabel.trailingAnchor.constraint(lessThanOrEqualTo: headerContainerView.trailingAnchor),
+            // Размеры аватара
+            avatarImageView.widthAnchor.constraint(equalToConstant: avatarSide),
+            avatarImageView.heightAnchor.constraint(equalToConstant: avatarSide),
 
-            headerContainerView.bottomAnchor.constraint(equalTo: avatarImageView.bottomAnchor),
-
-            // Внутренние констрейнты summaryCardView
+            // Summary stack заполняет карточку
             summaryStackView.topAnchor.constraint(equalTo: summaryCardView.topAnchor, constant: 8),
             summaryStackView.leadingAnchor.constraint(equalTo: summaryCardView.leadingAnchor),
             summaryStackView.trailingAnchor.constraint(equalTo: summaryCardView.trailingAnchor),
             summaryStackView.bottomAnchor.constraint(equalTo: summaryCardView.bottomAnchor, constant: -8),
 
-            // Лейблы в своих контейнерах
-            primarySummaryLabel.leadingAnchor.constraint(equalTo: primaryContainer.leadingAnchor, constant: 16),
-            primarySummaryLabel.trailingAnchor.constraint(equalTo: primaryContainer.trailingAnchor, constant: -16),
-            primarySummaryLabel.centerYAnchor.constraint(equalTo: primaryContainer.centerYAnchor),
+            // Лейблы внутри своих контейнеров
+            primarySummaryLabel.leadingAnchor.constraint(equalTo: primaryTextRowContainer.leadingAnchor, constant: 16),
+            primarySummaryLabel.trailingAnchor.constraint(equalTo: primaryTextRowContainer.trailingAnchor, constant: -16),
+            primarySummaryLabel.centerYAnchor.constraint(equalTo: primaryTextRowContainer.centerYAnchor),
 
-            secondarySummaryLabel.leadingAnchor.constraint(equalTo: secondaryContainer.leadingAnchor, constant: 16),
-            secondarySummaryLabel.trailingAnchor.constraint(equalTo: secondaryContainer.trailingAnchor, constant: -16),
-            secondarySummaryLabel.centerYAnchor.constraint(equalTo: secondaryContainer.centerYAnchor),
+            secondarySummaryLabel.leadingAnchor.constraint(equalTo: secondaryTextRowContainer.leadingAnchor, constant: 16),
+            secondarySummaryLabel.trailingAnchor.constraint(equalTo: secondaryTextRowContainer.trailingAnchor, constant: -16),
+            secondarySummaryLabel.centerYAnchor.constraint(equalTo: secondaryTextRowContainer.centerYAnchor),
 
             // Нижний бар
             bottomBarContainerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             bottomBarContainerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             bottomBarContainerView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
 
+            // Кнопка Done
             doneButton.leadingAnchor.constraint(equalTo: readable.leadingAnchor),
             doneButton.trailingAnchor.constraint(equalTo: readable.trailingAnchor),
             doneButton.topAnchor.constraint(equalTo: bottomBarContainerView.topAnchor, constant: 8),
@@ -264,10 +294,10 @@ final class ReviewPetProfileViewController: UIViewController {
             doneButton.widthAnchor.constraint(lessThanOrEqualToConstant: 300),
         ])
 
-        // Сборка строк в summaryStackView (как было)
-        summaryStackView.addArrangedSubview(primaryContainer)
+        // Наполняем summaryStackView блоками (порядок как раньше)
+        summaryStackView.addArrangedSubview(primaryTextRowContainer)
         summaryStackView.addArrangedSubview(FormSeparatorView())
-        summaryStackView.addArrangedSubview(secondaryContainer)
+        summaryStackView.addArrangedSubview(secondaryTextRowContainer)
         summaryStackView.addArrangedSubview(FormSeparatorView())
         summaryStackView.addArrangedSubview(breedRow)
         summaryStackView.addArrangedSubview(FormSeparatorView())
@@ -277,14 +307,15 @@ final class ReviewPetProfileViewController: UIViewController {
         summaryStackView.addArrangedSubview(FormSeparatorView())
         summaryStackView.addArrangedSubview(idRow)
 
-        // Блоки Owners/Nutrition/... (как было)
+        // Ряды Owners/Nutrition/... (как было)
         [ownersRow, nutritionRow, healthRecordsRow, notesRow, photosRow]
             .map { wrapRowInRoundedBackground($0) }
             .forEach { formStackView.addArrangedSubview($0) }
 
-        // Кнопка гарантированно поверх контента
+        // Кнопка поверх контента
         view.bringSubviewToFront(bottomBarContainerView)
     }
+
 
     
     private func wrapRowInRoundedBackground(_ row: UIControl) -> UIView {
@@ -366,10 +397,18 @@ final class ReviewPetProfileViewController: UIViewController {
         // если вдруг совсем пусто — можно скрыть карточку
         summaryCardView.isHidden = blocks.isEmpty
         
-        avatarImageView.image = UIImage.loadOrPlaceholder(
-            named: formData.avatarFileName ?? "no photo",
-            in: traitCollection
-        )
+//        avatarImageView.image = UIImage.loadOrPlaceholder(
+//            named: formData.avatarFileName ?? "no photo",
+//            in: traitCollection
+//        )
+        if let data = formData.avatarImageData, let image = UIImage(data: data) {
+            avatarImageView.image = image
+        } else {
+            avatarImageView.image = UIImage.loadOrPlaceholder(
+                named: formData.avatarFileName ?? "no photo",
+                in: traitCollection
+            )
+        }
     }
 
     // маленький помощник для "текстовых" строк (высота 44)
@@ -390,6 +429,23 @@ final class ReviewPetProfileViewController: UIViewController {
 
 
     // MARK: Actions
+    @objc private func changeAvatarTapped() {
+        if #available(iOS 14, *) {
+            var config = PHPickerConfiguration(photoLibrary: .shared())
+            config.filter = .images
+            config.selectionLimit = 1
+            let picker = PHPickerViewController(configuration: config)
+            picker.delegate = self
+            present(picker, animated: true)
+        } else {
+            let picker = UIImagePickerController()
+            picker.sourceType = .photoLibrary
+            picker.delegate = self
+            picker.allowsEditing = false
+            present(picker, animated: true)
+        }
+    }
+    
     @objc private func closeTapped() {
         // Закрыть модальную навигацию целиком
         if let nav = navigationController, nav.presentingViewController != nil {
@@ -509,5 +565,30 @@ extension ReviewPetProfileViewController: PetGeneralInfoViewControllerDelegate {
         self.formData = data
         refreshSummary()
         navigationController?.popViewController(animated: true)
+    }
+}
+
+@available(iOS 14, *)
+extension ReviewPetProfileViewController: PHPickerViewControllerDelegate {
+    func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
+        dismiss(animated: true)
+        guard let itemProvider = results.first?.itemProvider,
+              itemProvider.canLoadObject(ofClass: UIImage.self) else { return }
+        itemProvider.loadObject(ofClass: UIImage.self) { [weak self] object, _ in
+            guard let self, let image = object as? UIImage else { return }
+            DispatchQueue.main.async { self.handlePickedImage(image) }
+        }
+    }
+}
+
+extension ReviewPetProfileViewController: UINavigationControllerDelegate, UIImagePickerControllerDelegate {
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        dismiss(animated: true)
+    }
+    func imagePickerController(_ picker: UIImagePickerController,
+                               didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        dismiss(animated: true)
+        let image = (info[.editedImage] ?? info[.originalImage]) as? UIImage
+        if let image { handlePickedImage(image) }
     }
 }
