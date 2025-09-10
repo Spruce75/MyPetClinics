@@ -26,6 +26,8 @@ struct PetProfileFormData {
 
     var avatarImageData: Data?
     var avatarFileName: String?
+    
+    var owners: [PetOwnerFormData] = []
 }
 
 extension PetProfileFormData {
@@ -44,5 +46,13 @@ extension PetProfileFormData {
             avatarImageData: profile.avatarImageData,
             avatarFileName: profile.avatarFileName
         )
+        let converted = profile.owners.map {
+            PetOwnerFormData(fullName: $0.fullName, address: $0.address, contactDetails: $0.contactDetails)
+        }
+        self.owners = converted + Array(repeating: PetOwnerFormData(), count: max(0, 3 - converted.count))
+
+//        self.owners = profile.owners.map {
+//            PetOwnerFormData(fullName: $0.fullName, address: $0.address, contactDetails: $0.contactDetails)
+//        }
     }
 }

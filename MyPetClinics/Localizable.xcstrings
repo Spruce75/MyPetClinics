@@ -1,6 +1,17 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "address_title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Address"
+          }
+        }
+      }
+    },
     "age_months_title" : {
       "extractionState" : "extracted_with_value",
       "localizations" : {
@@ -220,6 +231,17 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Color/markings"
+          }
+        }
+      }
+    },
+    "contact_details_title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Contact details"
           }
         }
       }
@@ -749,6 +771,39 @@
         }
       }
     },
+    "owner1_main_title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Owner 1 (Main)"
+          }
+        }
+      }
+    },
+    "owner2_title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Owner 2"
+          }
+        }
+      }
+    },
+    "owner3_title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Owner 3"
+          }
+        }
+      }
+    },
     "owners_title" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -886,6 +941,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sök"
+          }
+        }
+      }
+    },
+    "set_up_owners_title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Set up Owners"
           }
         }
       }

@@ -224,7 +224,16 @@ final class CreatePetProfileViewController: UIViewController {
         viewController.delegate = self
         navigationController?.pushViewController(viewController, animated: true)
     }
-    @objc private func ownersTapped()      { /* TODO */ }
+    
+    // CreatePetProfileViewController.swift
+    @objc private func ownersTapped() {
+        let viewController = OwnersViewController(
+            initialOwners: formData.owners.map { $0.asOwnersVCFormData() }
+        )
+        viewController.delegate = self
+        navigationController?.pushViewController(viewController, animated: true)
+    }
+
     @objc private func nutritionTapped()   { /* TODO */ }
     @objc private func healthRecordsTapped(){ /* TODO */ }
     @objc private func notesTapped()       { /* TODO */ }
@@ -363,5 +372,15 @@ extension CreatePetProfileViewController: UINavigationControllerDelegate, UIImag
         dismiss(animated: true)
         let image = (info[.editedImage] ?? info[ .originalImage]) as? UIImage
         if let image { handlePickedImage(image) }
+    }
+}
+
+extension CreatePetProfileViewController: OwnersViewControllerDelegate {
+    func ownersViewController(_ controller: OwnersViewController,
+                              didFinishWith owners: [OwnersViewController.OwnerFormData]) {
+        // сохраняем в форму (фильтруем полностью пустые слоты)
+        self.formData.owners = owners
+            .map { $0.asPetOwnerFormData() }
+//            .filter { !$0.isEmpty }
     }
 }

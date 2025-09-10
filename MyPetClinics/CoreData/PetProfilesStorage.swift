@@ -5,129 +5,6 @@
 //  Created by Dmitry Dmitry on 26.8.2025.
 //
 
-//import UIKit
-//import CoreData
-//
-///// Уведомление об изменениях (пригодится для обновления UI списков).
-//extension Notification.Name {
-//    static let petProfilesStorageDidChange = Notification.Name("petProfilesStorageDidChange")
-//}
-//
-///// Репозиторий поверх Core Data. Никаких сокращений имен.
-//final class PetProfilesStorage: NSObject {
-//
-//    static let shared = PetProfilesStorage()
-//
-//    // MARK: - Core Data
-//
-//    let viewContext: NSManagedObjectContext = PersistentContainer.shared.persistentContainer.viewContext
-//
-//    private var fetchedResultsController: NSFetchedResultsController<PetProfileCoreData>!
-//    var onContentUpdated: (() -> Void)?
-//
-//    private override init() {
-//        super.init()
-//        initializeFetchedResultsController()
-//    }
-//
-//    // MARK: - Public API
-//
-//    func fetchAll() -> [PetProfile] {
-//        let objects = fetchedResultsController.fetchedObjects ?? []
-//        return objects.compactMap { $0.asDomain() }
-//    }
-//
-//    func create(from formData: PetProfileFormData, completion: @escaping (Bool) -> Void) {
-//        let entity = PetProfileCoreData(context: viewContext)
-//        let now = Date()
-//        let domainModel = PetProfile(
-//            id: UUID(),
-//            name: formData.name,
-//            fullName: formData.fullName,
-//            sex: formData.sex,
-//            species: formData.species,
-//            breed: formData.breed,
-//            colorMarkings: formData.colorMarkings,
-//            dateOfBirth: formData.dateOfBirth,
-//            weightInKilograms: formData.weightInKilograms,
-//            identificationType: formData.identificationType,
-//            identificationNumber: formData.identificationNumber,
-//            avatarFileName: formData.avatarFileName,
-//            createdAt: now,
-//            updatedAt: now
-//        )
-//        entity.apply(from: domainModel)
-//
-//        do {
-//            try viewContext.save()
-//            notifyDataChange()
-//            completion(true)
-//        } catch {
-//            print("Core Data save error: \(error)")
-//            completion(false)
-//        }
-//    }
-//    
-//    func delete(by id: UUID, completion: @escaping (Bool) -> Void) {
-//        let context = viewContext
-//        context.perform {
-//            let request: NSFetchRequest<PetProfileCoreData> = PetProfileCoreData.fetchRequest()
-//            request.fetchLimit = 1
-//            request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
-//            
-//            do {
-//                if let object = try context.fetch(request).first {
-//                    context.delete(object)
-//                    try context.save()
-//                    self.notifyDataChange()
-//                    completion(true)
-//                } else {
-//                    completion(false)
-//                }
-//            } catch {
-//                if context.hasChanges { context.rollback() }
-//                print("Core Data delete error: \(error)")
-//                completion(false)
-//            }
-//        }
-//    }
-//    
-//    // MARK: - Internal helpers
-//
-//    private func notifyDataChange() {
-//        NotificationCenter.default.post(name: .petProfilesStorageDidChange, object: viewContext)
-//        onContentUpdated?()
-//    }
-//
-//    private func initializeFetchedResultsController() {
-//        let request: NSFetchRequest<PetProfileCoreData> = PetProfileCoreData.fetchRequest()
-//        // самые свежие сверху
-//        request.sortDescriptors = [NSSortDescriptor(key: "updatedAt", ascending: false)]
-//
-//        fetchedResultsController = NSFetchedResultsController(
-//            fetchRequest: request,
-//            managedObjectContext: viewContext,
-//            sectionNameKeyPath: nil,
-//            cacheName: nil
-//        )
-//        fetchedResultsController.delegate = self
-//
-//        do {
-//            try fetchedResultsController.performFetch()
-//        } catch {
-//            print("FRC init error: \(error)")
-//        }
-//    }
-//}
-//
-//// MARK: - NSFetchedResultsControllerDelegate
-//
-//extension PetProfilesStorage: NSFetchedResultsControllerDelegate {
-//    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-//        notifyDataChange()
-//    }
-//}
-
 import UIKit
 import CoreData
 
@@ -183,6 +60,7 @@ final class PetProfilesStorage: NSObject {
             updatedAt: now
         )
         entity.apply(from: domainModel)
+        self.replaceOwners(for: entity, with: formData.owners)
 
         do {
             try viewContext.save()
@@ -259,6 +137,7 @@ final class PetProfilesStorage: NSObject {
 
                 // Маппим доменную модель обратно в Core Data объект
                 object.apply(from: updatedDomain)
+                self.replaceOwners(for: object, with: data.owners)
 
                 try context.save()
                 self.notifyDataChange()
@@ -303,5 +182,59 @@ final class PetProfilesStorage: NSObject {
 extension PetProfilesStorage: NSFetchedResultsControllerDelegate {
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         notifyDataChange()
+    }
+}
+
+// PetProfilesStorage.swift
+private extension PetProfilesStorage {
+    //    func replaceOwners(for profileObject: PetProfileCoreData, with formOwners: [PetOwnerFormData]) {
+    //        // удалить старые
+    //        if let existing = profileObject.owners as? Set<PetOwnerCoreData> {
+    //            for ownerManagedObject in existing { viewContext.delete(ownerManagedObject) }
+    //        }
+    //        // добавить новые (только непустые)
+    //        for owner in formOwners where !owner.isEmpty {
+    //            let ownerManagedObject = PetOwnerCoreData(context: viewContext) // имя вашей сущности
+    //            ownerManagedObject.fullName = owner.fullName?.nilIfBlank
+    //            ownerManagedObject.address = owner.address?.nilIfBlank
+    //            ownerManagedObject.contactDetails = owner.contactDetails?.nilIfBlank
+    //            profileObject.addToOwners(ownerManagedObject) // имя связи из модели
+    //        }
+    //    }
+    private func replaceOwners(for profileObject: PetProfileCoreData,
+                               with formOwners: [PetOwnerFormData]) {
+        // удалить старых
+        if let ordered = profileObject.value(forKey: "owners") as? NSOrderedSet {
+            for case let o as PetOwnerCoreData in ordered { viewContext.delete(o) }
+        } else if let unordered = profileObject.value(forKey: "owners") as? NSSet {
+            for case let o as PetOwnerCoreData in unordered { viewContext.delete(o) }
+        }
+
+        // упорядоченная связь
+        if let rel = profileObject.entity.relationshipsByName["owners"], rel.isOrdered {
+            let orderedSet = profileObject.mutableOrderedSetValue(forKey: "owners")
+            orderedSet.removeAllObjects()
+
+            for owner in formOwners where !owner.isEmpty {
+                let mo = PetOwnerCoreData(context: viewContext)
+                mo.fullName       = owner.fullName?.nilIfBlank
+                mo.address        = owner.address?.nilIfBlank
+                mo.contactDetails = owner.contactDetails?.nilIfBlank
+                // ВАЖНО: не ставим mo.profile = profileObject
+                orderedSet.add(mo) // сохраняет точный порядок добавления
+            }
+        } else {
+            // неупорядоченная связь (фолбэк)
+            let set = profileObject.mutableSetValue(forKey: "owners")
+            set.removeAllObjects()
+            for owner in formOwners where !owner.isEmpty {
+                let mo = PetOwnerCoreData(context: viewContext)
+                mo.fullName       = owner.fullName?.nilIfBlank
+                mo.address        = owner.address?.nilIfBlank
+                mo.contactDetails = owner.contactDetails?.nilIfBlank
+                // Достаточно добавить в set; inverse проставится автоматически.
+                set.add(mo)
+            }
+        }
     }
 }

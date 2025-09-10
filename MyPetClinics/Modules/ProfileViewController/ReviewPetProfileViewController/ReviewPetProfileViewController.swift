@@ -8,8 +8,6 @@
 import UIKit
 import PhotosUI
 
-/// Экран-резюме после заполнения General info.
-/// Показывает имя/аватар слева и сводку полей, ниже — секции Owners/Nutrition/... и кнопку Done для сохранения.
 final class ReviewPetProfileViewController: UIViewController {
 
     private(set) var formData: PetProfileFormData
@@ -113,23 +111,6 @@ final class ReviewPetProfileViewController: UIViewController {
             bottomBarContainerView.isHidden = true
         }
     }
-
-//    private func setupNav() {
-//        // Крестик слева — закрыть всё
-//        navigationItem.leftBarButtonItem = UIBarButtonItem(
-//            image: UIImage(systemName: "xmark"),
-//            style: .plain,
-//            target: self,
-//            action: #selector(closeTapped)
-//        )
-//        // Кнопка «редактировать General info»
-//        navigationItem.rightBarButtonItem = UIBarButtonItem(
-//            image: UIImage(systemName: "square.and.pencil"),
-//            style: .plain,
-//            target: self,
-//            action: #selector(editGeneralInfoTapped)
-//        )
-//    }
     
     private func setupNav() {
         // Если модально — крестик, если пушем в навигации — системная Back
@@ -553,7 +534,13 @@ final class ReviewPetProfileViewController: UIViewController {
     }
 
     // Плейсхолдеры — пока без экранов
-    @objc private func ownersTapped() {}
+    @objc private func ownersTapped() {
+        let viewController = OwnersViewController(
+            initialOwners: formData.owners.map { $0.asOwnersVCFormData() }
+        )
+        viewController.delegate = self
+        navigationController?.pushViewController(viewController, animated: true)
+    }
     @objc private func nutritionTapped() {}
     @objc private func healthRecordsTapped() {}
     @objc private func notesTapped() {}
@@ -590,5 +577,16 @@ extension ReviewPetProfileViewController: UINavigationControllerDelegate, UIImag
         dismiss(animated: true)
         let image = (info[.editedImage] ?? info[.originalImage]) as? UIImage
         if let image { handlePickedImage(image) }
+    }
+}
+
+extension ReviewPetProfileViewController: OwnersViewControllerDelegate {
+    func ownersViewController(_ controller: OwnersViewController,
+                              didFinishWith owners: [OwnersViewController.OwnerFormData]) {
+        self.formData.owners = owners
+            .map { $0.asPetOwnerFormData() }
+//            .filter { !$0.isEmpty }
+        // при желании можно обновить summary, когда появится отображение владельцев
+        // refreshSummary()
     }
 }

@@ -65,13 +65,6 @@ final class ProfileViewController: UIViewController {
             NotificationCenter.default.removeObserver(self)
     }
     
-    // MARK: - Private
-//    private func reloadPetsFromStorage() {
-//        profiles = PetProfilesStorage.shared.fetchAll()
-//        pets = profiles.map(Pet.init(from:))
-//        tableView.reloadData()
-//    }
-    
     private func reloadPetsFromStorage() {
         let fetched = PetProfilesStorage.shared.fetchAll()
         let dict = Dictionary(uniqueKeysWithValues: fetched.map { ($0.id, $0) })

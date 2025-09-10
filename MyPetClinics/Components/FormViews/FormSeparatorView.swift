@@ -5,20 +5,6 @@
 //  Created by Dmitry Dmitry on 26.8.2025.
 //
 
-//import UIKit
-//
-///// Тонкий разделитель между рядами
-//final class FormSeparatorView: UIView {
-//    override init(frame: CGRect) {
-//        super.init(frame: frame)
-//        translatesAutoresizingMaskIntoConstraints = false
-//        backgroundColor = UIColor.separator.withAlphaComponent(0.5)
-//        heightAnchor.constraint(equalToConstant: 1 / UIScreen.main.scale).isActive = true
-//    }
-//
-//    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
-//}
-
 import UIKit
 
 final class FormSeparatorView: UIView {

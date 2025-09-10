@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23788.4" systemVersion="24G90" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithSwiftData="YES" userDefinedModelVersionIdentifier="">
+    <entity name="PetOwnerCoreData" representedClassName="PetOwnerCoreData" syncable="YES" codeGenerationType="class">
+        <attribute name="address" optional="YES" attributeType="String"/>
+        <attribute name="contactDetails" optional="YES" attributeType="String"/>
+        <attribute name="fullName" optional="YES" attributeType="String"/>
+        <relationship name="profile" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PetProfileCoreData" inverseName="owners" inverseEntity="PetProfileCoreData"/>
+    </entity>
     <entity name="PetProfileCoreData" representedClassName="PetProfileCoreData" syncable="YES" codeGenerationType="class">
         <attribute name="avatarFileName" optional="YES" attributeType="String"/>
         <attribute name="avatarImageData" optional="YES" attributeType="Binary" allowsExternalBinaryDataStorage="YES"/>
@@ -16,5 +22,6 @@
         <attribute name="species" attributeType="String"/>
         <attribute name="updatedAt" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="weightInKilograms" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="NO"/>
+        <relationship name="owners" optional="YES" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="PetOwnerCoreData" inverseName="profile" inverseEntity="PetOwnerCoreData"/>
     </entity>
 </model>

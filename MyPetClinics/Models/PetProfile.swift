@@ -76,4 +76,6 @@ struct PetProfile {
 
     let createdAt: Date
     var updatedAt: Date
+    
+    var owners: [PetOwner] = []
 }
