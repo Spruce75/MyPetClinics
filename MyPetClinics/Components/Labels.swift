@@ -18,6 +18,7 @@ enum LabelsStyle {
     case sectionHeaderLabelStyle
     case bold34TitleLabelStyle
     case badgeCountLabelStyle
+    case emptyStateTitleLabelStyle
 }
 
 final class Labels: UILabel {
@@ -92,6 +93,12 @@ final class Labels: UILabel {
             textColor = .white
             textAlignment = .center
             numberOfLines = 1
+            
+        case .emptyStateTitleLabelStyle:
+            font = UIFont.systemFont(ofSize: 28, weight: .semibold)
+            textColor = .label
+            numberOfLines = 0
+            textAlignment = .center
         }
     }
 }

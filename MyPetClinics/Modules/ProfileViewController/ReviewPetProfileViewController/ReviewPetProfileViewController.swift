@@ -542,7 +542,15 @@ final class ReviewPetProfileViewController: UIViewController {
         navigationController?.pushViewController(viewController, animated: true)
     }
     @objc private func nutritionTapped() {}
-    @objc private func healthRecordsTapped() {}
+    
+    @objc private func healthRecordsTapped() {
+        let viewController = HealthRecordsViewController(
+            formData: formData,
+            editingProfileID: editingProfileID
+        )
+        navigationController?.pushViewController(viewController, animated: true)
+    }
+    
     @objc private func notesTapped() {}
     @objc private func photosTapped() {}
 }
@@ -586,7 +594,6 @@ extension ReviewPetProfileViewController: OwnersViewControllerDelegate {
         self.formData.owners = owners
             .map { $0.asPetOwnerFormData() }
 //            .filter { !$0.isEmpty }
-        // при желании можно обновить summary, когда появится отображение владельцев
-        // refreshSummary()
+        
     }
 }

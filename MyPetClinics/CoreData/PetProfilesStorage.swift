@@ -187,20 +187,6 @@ extension PetProfilesStorage: NSFetchedResultsControllerDelegate {
 
 // PetProfilesStorage.swift
 private extension PetProfilesStorage {
-    //    func replaceOwners(for profileObject: PetProfileCoreData, with formOwners: [PetOwnerFormData]) {
-    //        // удалить старые
-    //        if let existing = profileObject.owners as? Set<PetOwnerCoreData> {
-    //            for ownerManagedObject in existing { viewContext.delete(ownerManagedObject) }
-    //        }
-    //        // добавить новые (только непустые)
-    //        for owner in formOwners where !owner.isEmpty {
-    //            let ownerManagedObject = PetOwnerCoreData(context: viewContext) // имя вашей сущности
-    //            ownerManagedObject.fullName = owner.fullName?.nilIfBlank
-    //            ownerManagedObject.address = owner.address?.nilIfBlank
-    //            ownerManagedObject.contactDetails = owner.contactDetails?.nilIfBlank
-    //            profileObject.addToOwners(ownerManagedObject) // имя связи из модели
-    //        }
-    //    }
     private func replaceOwners(for profileObject: PetProfileCoreData,
                                with formOwners: [PetOwnerFormData]) {
         // удалить старых

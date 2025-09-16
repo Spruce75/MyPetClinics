@@ -152,6 +152,43 @@ final class CreatePetProfileViewController: UIViewController {
         }
     }
     
+    // MARK: - Guard: General Info must be filled
+    
+    /// Проверка: заполнены ли Name и Species (как в вашей валидации).
+    private func isGeneralInfoCompleted() -> Bool {
+        let nameOk = !formData.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        let speciesOk: Bool = {
+            switch formData.species {
+            case .cat, .dog: return true
+            case .other(let custom):
+                return !custom.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            }
+        }()
+        return nameOk && speciesOk
+    }
+    
+    /// Показать алерт, что нужно сначала заполнить General Info.
+    private func presentFillGeneralInfoAlert() {
+        let alert = UIAlertController(
+            title: String(localized: "complete_general_info_title", defaultValue: "Complete General Info"),
+            message: String(localized: "complete_general_info_msg", defaultValue: "Please fill in the pet’s name and species in General info first."),
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { [weak self] _ in
+            // Предлагаем сразу перейти в General Info
+            self?.generalInfoTapped()
+        }))
+        present(alert, animated: true)
+    }
+    
+    /// Универсальный гард для пунктов меню, зависящих от General Info.
+    private func proceedOnlyIfGeneralInfoCompleted(_ proceed: () -> Void) {
+        guard isGeneralInfoCompleted() else {
+            presentFillGeneralInfoAlert()
+            return
+        }
+        proceed()
+    }
     
     // MARK: - Event Handler (Actions)
     @objc private func closeTapped() {
@@ -202,8 +239,7 @@ final class CreatePetProfileViewController: UIViewController {
             DispatchQueue.main.async {
                 guard let self else { return }
                 if ok {
-                    // Репозиторий уже шлёт Notification .petProfilesStorageDidChange — списки могут обновиться.
-                    self.closeTapped() // ← закрываем ТОЛЬКО при успехе
+                    self.closeTapped()
                 } else {
                     self.doneButton.isEnabled = true
                     let alert = UIAlertController(
@@ -218,26 +254,53 @@ final class CreatePetProfileViewController: UIViewController {
         }
     }
     
-    
     @objc private func generalInfoTapped() {
         let viewController = PetGeneralInfoViewController(initial: formData)
         viewController.delegate = self
         navigationController?.pushViewController(viewController, animated: true)
     }
     
-    // CreatePetProfileViewController.swift
+    // MARK: — Guarded menu items
+    
     @objc private func ownersTapped() {
-        let viewController = OwnersViewController(
-            initialOwners: formData.owners.map { $0.asOwnersVCFormData() }
-        )
-        viewController.delegate = self
-        navigationController?.pushViewController(viewController, animated: true)
+        proceedOnlyIfGeneralInfoCompleted { [weak self] in
+            guard let self else { return }
+            let viewController = OwnersViewController(
+                initialOwners: formData.owners.map { $0.asOwnersVCFormData() }
+            )
+            viewController.delegate = self
+            navigationController?.pushViewController(viewController, animated: true)
+        }
     }
 
-    @objc private func nutritionTapped()   { /* TODO */ }
-    @objc private func healthRecordsTapped(){ /* TODO */ }
-    @objc private func notesTapped()       { /* TODO */ }
-    @objc private func photosTapped()      { /* TODO */ }
+    @objc private func nutritionTapped() {
+        proceedOnlyIfGeneralInfoCompleted {
+            // TODO: экран Nutrition (когда будет готов)
+        }
+    }
+    
+    @objc private func healthRecordsTapped() {
+        proceedOnlyIfGeneralInfoCompleted { [weak self] in
+            guard let self else { return }
+            let viewController = HealthRecordsViewController(
+                formData: formData,
+                editingProfileID: nil
+            )
+            navigationController?.pushViewController(viewController, animated: true)
+        }
+    }
+    
+    @objc private func notesTapped() {
+        proceedOnlyIfGeneralInfoCompleted {
+            // TODO: экран Notes (когда будет готов)
+        }
+    }
+    
+    @objc private func photosTapped() {
+        proceedOnlyIfGeneralInfoCompleted {
+            // TODO: экран Photos (когда будет готов)
+        }
+    }
     
     @objc private func pickPhotoTapped() {
         if #available(iOS 14, *) {
@@ -260,9 +323,7 @@ final class CreatePetProfileViewController: UIViewController {
 // MARK: - Layout
 extension CreatePetProfileViewController {
     private func setupViewsAndConstraints() {
-        
         let readable = bottomBarContainerView.readableContentGuide
-        
         
         contentContainerView.translatesAutoresizingMaskIntoConstraints = false
         bottomBarContainerView.translatesAutoresizingMaskIntoConstraints = false
@@ -317,13 +378,11 @@ extension CreatePetProfileViewController {
             
             doneButton.leadingAnchor.constraint(equalTo: readable.leadingAnchor),
             doneButton.trailingAnchor.constraint(equalTo: readable.trailingAnchor),
-            
             doneButton.centerXAnchor.constraint(equalTo: bottomBarContainerView.centerXAnchor),
-    
             doneButton.bottomAnchor.constraint(equalTo: bottomBarContainerView.bottomAnchor, constant: -8),
-            
             doneButton.widthAnchor.constraint(lessThanOrEqualToConstant: 300)
         ])
+        
         photoContainerView.layer.masksToBounds = true
         photoContainerView.layer.cornerRadius = 56
         avatarPreviewImageView.layer.cornerRadius = 56
@@ -370,7 +429,7 @@ extension CreatePetProfileViewController: UINavigationControllerDelegate, UIImag
     func imagePickerController(_ picker: UIImagePickerController,
                                didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         dismiss(animated: true)
-        let image = (info[.editedImage] ?? info[ .originalImage]) as? UIImage
+        let image = (info[.editedImage] ?? info[.originalImage]) as? UIImage
         if let image { handlePickedImage(image) }
     }
 }
@@ -378,9 +437,6 @@ extension CreatePetProfileViewController: UINavigationControllerDelegate, UIImag
 extension CreatePetProfileViewController: OwnersViewControllerDelegate {
     func ownersViewController(_ controller: OwnersViewController,
                               didFinishWith owners: [OwnersViewController.OwnerFormData]) {
-        // сохраняем в форму (фильтруем полностью пустые слоты)
-        self.formData.owners = owners
-            .map { $0.asPetOwnerFormData() }
-//            .filter { !$0.isEmpty }
+        self.formData.owners = owners.map { $0.asPetOwnerFormData() }
     }
 }

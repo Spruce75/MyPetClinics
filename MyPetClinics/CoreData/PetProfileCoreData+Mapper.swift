@@ -48,13 +48,6 @@ extension PetProfileCoreData {
             let updatedAt = updatedAt
         else { return nil }
         
-//        let ownersManagedObjects: [PetOwnerCoreData] =
-//            (owners as? Set<PetOwnerCoreData>)?.map { $0 } ?? []
-//
-//        let ownersList: [PetOwner] = ownersManagedObjects.map {
-//            PetOwner(fullName: $0.fullName, address: $0.address, contactDetails: $0.contactDetails)
-//        }
-        
         let ownersManagedObjects: [PetOwnerCoreData] = {
             if let ordered = self.value(forKey: "owners") as? NSOrderedSet {
                 return ordered.array as? [PetOwnerCoreData] ?? []

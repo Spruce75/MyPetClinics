@@ -1,6 +1,17 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "add_vaccination_title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Add vaccination"
+          }
+        }
+      }
+    },
     "address_title" : {
       "extractionState" : "extracted_with_value",
       "localizations" : {
@@ -41,6 +52,17 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%lld years old"
+          }
+        }
+      }
+    },
+    "allergies_title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Allergies"
           }
         }
       }
@@ -213,6 +235,17 @@
         }
       }
     },
+    "clinical_examinations_title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Clinical Examinations"
+          }
+        }
+      }
+    },
     "close_title" : {
       "extractionState" : "extracted_with_value",
       "localizations" : {
@@ -235,6 +268,28 @@
         }
       }
     },
+    "complete_general_info_msg" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Please fill in the pet’s name and species in General info first."
+          }
+        }
+      }
+    },
+    "complete_general_info_title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Complete General Info"
+          }
+        }
+      }
+    },
     "contact_details_title" : {
       "extractionState" : "extracted_with_value",
       "localizations" : {
@@ -242,6 +297,28 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Contact details"
+          }
+        }
+      }
+    },
+    "date_placeholder" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Date"
+          }
+        }
+      }
+    },
+    "date_time_placeholder" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Date and time"
           }
         }
       }
@@ -558,6 +635,17 @@
         }
       }
     },
+    "medical_conditions_title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Medical Conditions"
+          }
+        }
+      }
+    },
     "my_pets_title" : {
       "extractionState" : "extracted_with_value",
       "localizations" : {
@@ -625,6 +713,17 @@
         }
       }
     },
+    "next_time_title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "next time"
+          }
+        }
+      }
+    },
     "no_bookmarks_message" : {
       "extractionState" : "extracted_with_value",
       "localizations" : {
@@ -643,6 +742,17 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "No clinics yet"
+          }
+        }
+      }
+    },
+    "no_vaccinations_title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "No Vaccinations"
           }
         }
       }
@@ -749,6 +859,17 @@
         }
       }
     },
+    "other_lab_tests_title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Other Lab Tests"
+          }
+        }
+      }
+    },
     "other_title" : {
       "extractionState" : "extracted_with_value",
       "localizations" : {
@@ -827,6 +948,17 @@
         }
       }
     },
+    "parasite_treatments_title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Parasite Treatments"
+          }
+        }
+      }
+    },
     "photos_title" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -896,8 +1028,41 @@
         }
       }
     },
+    "rabies_titer_title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Rabies Titer Test"
+          }
+        }
+      }
+    },
     "Remove" : {
 
+    },
+    "remove_photo_title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Remove photo?"
+          }
+        }
+      }
+    },
+    "remove_title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Remove"
+          }
+        }
+      }
     },
     "search_placeholder" : {
       "extractionState" : "manual",
@@ -1101,6 +1266,28 @@
         }
       }
     },
+    "surgeries_procedures_title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Surgeries / Procedures"
+          }
+        }
+      }
+    },
+    "symptoms_observations_title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Symptoms & Observations"
+          }
+        }
+      }
+    },
     "try_changing_filters_or_query" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1124,6 +1311,17 @@
         }
       }
     },
+    "upload_image_title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Upload an image"
+          }
+        }
+      }
+    },
     "upload_photo_title" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1143,6 +1341,61 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ladda upp foto"
+          }
+        }
+      }
+    },
+    "vaccination_default_title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Vaccination"
+          }
+        }
+      }
+    },
+    "vaccination_title_field_title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Vaccination title"
+          }
+        }
+      }
+    },
+    "vaccination_title_placeholder" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Enter title"
+          }
+        }
+      }
+    },
+    "vaccinations_title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Vaccinations"
+          }
+        }
+      }
+    },
+    "vet_visits_title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Vet visits"
           }
         }
       }

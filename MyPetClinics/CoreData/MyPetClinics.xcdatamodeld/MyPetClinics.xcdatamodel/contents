@@ -24,4 +24,13 @@
         <attribute name="weightInKilograms" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="NO"/>
         <relationship name="owners" optional="YES" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="PetOwnerCoreData" inverseName="profile" inverseEntity="PetOwnerCoreData"/>
     </entity>
+    <entity name="VaccinationCoreData" representedClassName="VaccinationCoreData" syncable="YES" codeGenerationType="class">
+        <attribute name="createdAt" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="dateGiven" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="imageData" optional="YES" attributeType="Binary" allowsExternalBinaryDataStorage="YES"/>
+        <attribute name="notes" optional="YES" attributeType="String"/>
+        <attribute name="petId" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="title" attributeType="String"/>
+    </entity>
 </model>
