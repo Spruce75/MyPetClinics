@@ -93,24 +93,24 @@ final class MyPetClinicsViewController: UIViewController {
     private func setupViewsAndConstraints() {
         [tableView, emptyStateView].forEach { view.addSubview($0) }
         emptyStateView.translatesAutoresizingMaskIntoConstraints = false
-
+        
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: view.topAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-
-            emptyStateView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 40),
-            emptyStateView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            emptyStateView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            emptyStateView.bottomAnchor.constraint(lessThanOrEqualTo: view.bottomAnchor, constant: -16)
+            
+            emptyStateView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            emptyStateView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            emptyStateView.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: 16),
+            emptyStateView.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor, constant: -16)
         ])
-
+        
         emptyStateView.configure(mode: .textOnly)
         emptyStateView.setTexts(
             title: String(localized: "no_bookmarks_title", defaultValue: "No clinics yet"),
             subtitle: String(localized: "no_bookmarks_message",
-                             defaultValue: "Tap the bookmark icon on a clinic to add it here.")
+                             defaultValue: "Tap the bookmark icon on a clinic to add it here")
         )
         emptyStateView.setTextColors(primary: .label, secondary: .secondaryLabel)
     }

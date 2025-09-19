@@ -312,17 +312,6 @@
         }
       }
     },
-    "date_time_placeholder" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Date and time"
-          }
-        }
-      }
-    },
     "delete_failed_msg" : {
       "extractionState" : "extracted_with_value",
       "localizations" : {
@@ -411,6 +400,17 @@
         }
       }
     },
+    "edit_title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Edit"
+          }
+        }
+      }
+    },
     "enter_id_number_title" : {
       "extractionState" : "extracted_with_value",
       "localizations" : {
@@ -451,6 +451,17 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Female"
+          }
+        }
+      }
+    },
+    "filter_by_title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "By title"
           }
         }
       }
@@ -730,7 +741,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Tap the bookmark icon on a clinic to add it here."
+            "value" : "Tap the bookmark icon on a clinic to add it here"
           }
         }
       }
@@ -746,6 +757,17 @@
         }
       }
     },
+    "no_notes_title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "No notes"
+          }
+        }
+      }
+    },
     "no_vaccinations_title" : {
       "extractionState" : "extracted_with_value",
       "localizations" : {
@@ -753,6 +775,17 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "No Vaccinations"
+          }
+        }
+      }
+    },
+    "not_found_title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Vaccination not found."
           }
         }
       }
@@ -1288,6 +1321,17 @@
         }
       }
     },
+    "time_placeholder" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Time"
+          }
+        }
+      }
+    },
     "try_changing_filters_or_query" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1385,6 +1429,28 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Vaccinations"
+          }
+        }
+      }
+    },
+    "validation_msg_date" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Please select a date for the vaccination."
+          }
+        }
+      }
+    },
+    "validation_title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Missing date"
           }
         }
       }

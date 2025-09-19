@@ -21,12 +21,6 @@ final class ProfileViewController: UIViewController {
         return tableView
     }()
     
-    private lazy var searchButton = Buttons(
-        style: .actionButtonStyle(title: "", systemIconName: "magnifyingglass"),
-        target: self,
-        action: #selector(searchTapped)
-    )
-    
     private lazy var addButton: Buttons = {
         let button = Buttons(
             style: .actionButtonStyle(title: "", systemIconName: "plus"),
@@ -98,16 +92,8 @@ final class ProfileViewController: UIViewController {
         addButton.tintColor = .systemBlue
         
         let edgeInset: CGFloat = 30
-        let leftSpacer  = UIBarButtonItem(barButtonSystemItem: .fixedSpace, target: nil, action: nil)
-        leftSpacer.width = edgeInset
         let rightSpacer = UIBarButtonItem(barButtonSystemItem: .fixedSpace, target: nil, action: nil)
         rightSpacer.width = edgeInset
-        
-        // слева: spacer потом кнопка (раскладка слева-направо)
-        navigationItem.leftBarButtonItems = [
-            leftSpacer,
-            UIBarButtonItem(customView: searchButton)
-        ]
         
         // справа: СНАЧАЛА spacer, затем кнопка (раскладка справа-налево)
         navigationItem.rightBarButtonItems = [
@@ -126,9 +112,9 @@ final class ProfileViewController: UIViewController {
         reloadPetsFromStorage()
     }
     
-    @objc private func searchTapped() {
-        // TODO: поиск по питомцам
-    }
+//    @objc private func searchTapped() {
+//        // TODO: поиск по питомцам
+//    }
     @objc private func addTapped() {
         let createProfileViewController = CreatePetProfileViewController()
         let navigationController = UINavigationController(rootViewController: createProfileViewController)
@@ -179,16 +165,6 @@ extension ProfileViewController: UITableViewDataSource {
 
 // MARK: - UITableViewDelegate
 extension ProfileViewController: UITableViewDelegate {
-
-//    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-//        tableView.deselectRow(at: indexPath, animated: true)
-//        
-//        let pet = pets[indexPath.row]
-//        let viewController = UIViewController()
-//        viewController.view.backgroundColor = .systemBackground
-//        viewController.title = pet.name
-//        navigationController?.pushViewController(viewController, animated: true)
-//    }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)

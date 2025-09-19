@@ -5,276 +5,12 @@
 //  Created by Dmitry Dmitry on 14.9.2025.
 //
 
-// VaccinationsListViewController.swift
-//import UIKit
-//
-//final class VaccinationsListViewController: UIViewController {
-//
-//    // MARK: - Public
-//    private let petDisplayName: String
-//    private let petAvatarImageData: Data?
-//    private let petAvatarFileName: String?
-//    private let petId: UUID?
-//
-//    // MARK: - UI
-//    private let scrollView = UIScrollView()
-//    private let contentContainerView = UIView()
-//    private let contentStackView = UIStackView()
-//
-//    private let headerContainerView = UIView()
-//    private let headerHorizontalStackView = UIStackView()
-//    private let avatarImageView: UIImageView = {
-//        let view = UIImageView()
-//        view.translatesAutoresizingMaskIntoConstraints = false
-//        view.contentMode = .scaleAspectFill
-//        view.clipsToBounds = true
-//        return view
-//    }()
-//    private let petNameLabel = Labels(style: .bold34TitleLabelStyle)
-//
-//    private let sectionTitleLabel: Labels = {
-//        let label = Labels(style: .ordinaryText17LabelStyle,
-//                       text: String(localized: "vaccinations_title", defaultValue: "Vaccinations"))
-//        label.textAlignment = .center
-//        return label
-//    }()
-//
-//    private let listStackView = UIStackView()
-//
-//    // Пустое состояние
-//    private let emptyStateContainerView = UIView()
-//    private let emptyStateLabel: Labels = {
-//        let label = Labels(style: .emptyStateTitleLabelStyle,
-//                       text: String(localized: "no_vaccinations_title",
-//                                    defaultValue: "No Vaccinations"))
-//        return label
-//    }()
-//    private lazy var addVaccinationButton = Buttons(
-//        style: .primary20new(title: String(localized: "add_vaccination_title", defaultValue: "Add vaccination")),
-//        target: self,
-//        action: #selector(addVaccinationTapped)
-//    )
-//
-//    // MARK: - State
-//    private var items: [VaccinationListItem] = []
-//
-//    // MARK: - Init
-//    init(
-//        petDisplayName: String,
-//        petAvatarImageData: Data?,
-//        petAvatarFileName: String?,
-//        petId: UUID?
-//    ) {
-//        self.petDisplayName = petDisplayName
-//        self.petAvatarImageData = petAvatarImageData
-//        self.petAvatarFileName = petAvatarFileName
-//        self.petId = petId
-//        super.init(nibName: nil, bundle: nil)
-//    }
-//    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
-//
-//    // MARK: - Lifecycle
-//    override func viewDidLoad() {
-//        super.viewDidLoad()
-//        view.backgroundColor = .systemBackground
-//        setupNavigation()
-//        setupViewsAndConstraints()
-//        fillHeader()
-//        reloadFromStorage()
-//    }
-//
-//    override func viewWillAppear(_ animated: Bool) {
-//        super.viewWillAppear(animated)
-//        reloadFromStorage()
-//    }
-//
-//    // MARK: - Setup
-//    private func setupNavigation() {
-//        let closeButton = UIBarButtonItem(
-//            image: UIImage(systemName: "xmark"),
-//            style: .plain,
-//            target: self,
-//            action: #selector(closeTapped)
-//        )
-//        closeButton.accessibilityLabel = String(localized: "close_title", defaultValue: "Close")
-//        navigationItem.rightBarButtonItem = closeButton
-//    }
-//
-//    private func fillHeader() {
-//        petNameLabel.text = petDisplayName.nilIfBlank
-//            ?? String(localized: "name_title", defaultValue: "Name")
-//
-//        if let data = petAvatarImageData, let image = UIImage(data: data) {
-//            avatarImageView.image = image
-//        } else if let file = petAvatarFileName {
-//            avatarImageView.image = UIImage.loadOrPlaceholder(named: file, in: traitCollection)
-//        } else {
-//            avatarImageView.image = UIImage(named: "no photo")
-//        }
-//    }
-//
-//    private func reloadFromStorage() {
-//        if let petId = petId {
-//            items = VaccinationsStorage.shared.fetchVaccinations(forPetId: petId)
-//        } else {
-//            items = []
-//        }
-//        renderState()
-//    }
-//
-//    private func renderState() {
-//        listStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
-//
-//        let isEmpty = items.isEmpty
-//        emptyStateContainerView.isHidden = !isEmpty
-//        listStackView.isHidden = isEmpty
-//
-//        guard !isEmpty else { return }
-//
-//        for item in items {
-//            let title = item.title?.nilIfBlank
-//            ?? String(localized: "vaccination_default_title", defaultValue: "Vaccination")
-//            let row = makeVaccinationRow(title: title)
-//            row.accessibilityIdentifier = "vaccination_row_\(item.id.uuidString)"
-//            listStackView.addArrangedSubview(row)
-//        }
-//    }
-//
-//    private func makeVaccinationRow(title: String) -> UIView {
-//        let container = Views(style: .view12Style)
-//        container.backgroundColor = .tertiarySystemFill
-//
-//        let label = Labels(style: .ordinaryText17LabelStyle, text: title)
-//        container.addSubview(label)
-//
-//        NSLayoutConstraint.activate([
-//            label.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 16),
-//            label.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -16),
-//            label.topAnchor.constraint(equalTo: container.topAnchor, constant: 14),
-//            label.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -14),
-//            container.heightAnchor.constraint(greaterThanOrEqualToConstant: 56)
-//        ])
-//        return container
-//    }
-//}
-//
-//// MARK: - Layout
-//private extension VaccinationsListViewController {
-//    func setupViewsAndConstraints() {
-//        // Общая иерархия
-//        scrollView.translatesAutoresizingMaskIntoConstraints = false
-//        contentContainerView.translatesAutoresizingMaskIntoConstraints = false
-//        contentStackView.translatesAutoresizingMaskIntoConstraints = false
-//
-//        view.addSubview(scrollView)
-//        scrollView.addSubview(contentContainerView)
-//        contentContainerView.addSubview(contentStackView)
-//
-//        // Контентный стек
-//        contentStackView.axis = .vertical
-//        contentStackView.alignment = .fill
-//        contentStackView.spacing = 16
-//
-//        // Header
-//        headerContainerView.translatesAutoresizingMaskIntoConstraints = false
-//        headerHorizontalStackView.translatesAutoresizingMaskIntoConstraints = false
-//        headerHorizontalStackView.axis = .horizontal
-//        headerHorizontalStackView.alignment = .center
-//        headerHorizontalStackView.spacing = 16
-//        headerContainerView.addSubview(headerHorizontalStackView)
-//
-//        let avatarSide: CGFloat = 80
-//        avatarImageView.layer.cornerRadius = avatarSide / 2
-//
-//        headerHorizontalStackView.addArrangedSubview(avatarImageView)
-//        headerHorizontalStackView.addArrangedSubview(petNameLabel)
-//        petNameLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
-//
-//        // Секции
-//        contentStackView.addArrangedSubview(headerContainerView)
-//        contentStackView.addArrangedSubview(sectionTitleLabel)
-//
-//        // Пустое состояние (как в макете: заголовок, ниже кнопка)
-//        emptyStateContainerView.translatesAutoresizingMaskIntoConstraints = false
-//        emptyStateContainerView.addSubview(emptyStateLabel)
-//        emptyStateContainerView.addSubview(addVaccinationButton)
-//        contentStackView.addArrangedSubview(emptyStateContainerView)
-//
-//        // Список
-//        listStackView.translatesAutoresizingMaskIntoConstraints = false
-//        listStackView.axis = .vertical
-//        listStackView.alignment = .fill
-//        listStackView.spacing = 12
-//        contentStackView.addArrangedSubview(listStackView)
-//
-//        // Констрейнты
-//        NSLayoutConstraint.activate([
-//            // Scroll
-//            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-//            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-//            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-//            scrollView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
-//
-//            // Контейнер контента
-//            contentContainerView.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
-//            contentContainerView.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor),
-//            contentContainerView.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor),
-//            contentContainerView.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor),
-//            contentContainerView.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor),
-//
-//            // Внутренний стек
-//            contentStackView.topAnchor.constraint(equalTo: contentContainerView.topAnchor, constant: 16),
-//            contentStackView.leadingAnchor.constraint(equalTo: contentContainerView.leadingAnchor, constant: 16),
-//            contentStackView.trailingAnchor.constraint(equalTo: contentContainerView.trailingAnchor, constant: -16),
-//            contentStackView.bottomAnchor.constraint(equalTo: contentContainerView.bottomAnchor, constant: -16),
-//
-//            // Header
-//            headerHorizontalStackView.topAnchor.constraint(equalTo: headerContainerView.topAnchor),
-//            headerHorizontalStackView.bottomAnchor.constraint(equalTo: headerContainerView.bottomAnchor),
-//            headerHorizontalStackView.centerXAnchor.constraint(equalTo: headerContainerView.centerXAnchor),
-//            headerHorizontalStackView.leadingAnchor.constraint(greaterThanOrEqualTo: headerContainerView.leadingAnchor),
-//            headerHorizontalStackView.trailingAnchor.constraint(lessThanOrEqualTo: headerContainerView.trailingAnchor),
-//
-//            avatarImageView.widthAnchor.constraint(equalToConstant: avatarSide),
-//            avatarImageView.heightAnchor.constraint(equalToConstant: avatarSide),
-//
-//            // Пустое состояние
-//            emptyStateLabel.centerXAnchor.constraint(equalTo: emptyStateContainerView.centerXAnchor),
-//            emptyStateLabel.topAnchor.constraint(equalTo: emptyStateContainerView.topAnchor, constant: 80),
-//
-//            addVaccinationButton.centerXAnchor.constraint(equalTo: emptyStateContainerView.centerXAnchor),
-//            addVaccinationButton.topAnchor.constraint(equalTo: emptyStateLabel.bottomAnchor, constant: 28),
-//            addVaccinationButton.bottomAnchor.constraint(equalTo: emptyStateContainerView.bottomAnchor, constant: -40),
-//            addVaccinationButton.widthAnchor.constraint(lessThanOrEqualToConstant: 300),
-//        ])
-//    }
-//}
-//
-//// MARK: - Actions
-//private extension VaccinationsListViewController {
-//    @objc func closeTapped() {
-//        if let nav = navigationController, nav.presentingViewController != nil {
-//            nav.dismiss(animated: true)
-//        } else if presentingViewController != nil {
-//            dismiss(animated: true)
-//        } else {
-//            navigationController?.popViewController(animated: true)
-//        }
-//    }
-//
-//    @objc func addVaccinationTapped() {
-//        let viewController = CreateNewVaccinationViewController(
-//            petDisplayName: petDisplayName,
-//            petAvatarImageData: petAvatarImageData,
-//            petAvatarFileName: petAvatarFileName
-//        )
-//        navigationController?.pushViewController(viewController, animated: true)
-//    }
-//}
-
 import UIKit
 
-final class VaccinationsListViewController: UIViewController, SortOptionsViewControllerDelegate {
+final class VaccinationsListViewController: UIViewController {
+    
+    private var allItems: [VaccinationListItem] = []
+    private var selectedFilterTitles: Set<String> = []
 
     // MARK: - Public (header context)
     private let petDisplayName: String
@@ -283,10 +19,10 @@ final class VaccinationsListViewController: UIViewController, SortOptionsViewCon
     private let petId: UUID?
 
     // MARK: - UI
-    private let scrollView = UIScrollView()
-    private let contentContainerView = UIView()
-    private let contentStackView = UIStackView()
+    private let bottomBarContainerView = UIView()
+    private let tableView = UITableView(frame: .zero, style: .insetGrouped)
 
+    // Header subviews (для tableHeaderView)
     private let headerContainerView = UIView()
     private let headerHorizontalStackView = UIStackView()
     private let avatarImageView: UIImageView = {
@@ -297,23 +33,20 @@ final class VaccinationsListViewController: UIViewController, SortOptionsViewCon
         return view
     }()
     private let petNameLabel = Labels(style: .bold34TitleLabelStyle)
-
     private let sectionTitleLabel: Labels = {
         let label = Labels(style: .ordinaryText17LabelStyle,
-                           text: String(localized: "vaccinations_title", defaultValue: "Vaccinations"))
+                       text: String(localized: "vaccinations_title", defaultValue: "Vaccinations"))
         label.textAlignment = .center
         return label
     }()
-
-    // Sort / Filter (как в Search)
     private let actionsStackView: UIStackView = {
-        let s = UIStackView()
-        s.axis = .horizontal
-        s.alignment = .fill
-        s.distribution = .fillEqually
-        s.spacing = 12
-        s.translatesAutoresizingMaskIntoConstraints = false
-        return s
+        let stackView = UIStackView()
+        stackView.axis = .horizontal
+        stackView.alignment = .fill
+        stackView.distribution = .equalSpacing
+        stackView.spacing = 12
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        return stackView
     }()
     private lazy var sortButton = Buttons(
         style: .actionButtonStyle(title: String(localized: "sort_title"), systemIconName: "arrow.up.arrow.down"),
@@ -324,15 +57,7 @@ final class VaccinationsListViewController: UIViewController, SortOptionsViewCon
         target: self, action: #selector(filterTapped)
     )
 
-    private let listStackView = UIStackView()
-
-    // Empty state
-    private let emptyStateContainerView = UIView()
-    private let emptyStateLabel: Labels = {
-        let label = Labels(style: .emptyStateTitleLabelStyle,
-                           text: String(localized: "no_vaccinations_title", defaultValue: "No Vaccinations"))
-        return label
-    }()
+    // Bottom bar
     private lazy var addVaccinationButton = Buttons(
         style: .primary20new(title: String(localized: "add_vaccination_title", defaultValue: "Add vaccination")),
         target: self, action: #selector(addVaccinationTapped)
@@ -341,20 +66,16 @@ final class VaccinationsListViewController: UIViewController, SortOptionsViewCon
     // MARK: - State
     private var items: [VaccinationListItem] = []
     private let listDateFormatter: DateFormatter = {
-        let f = DateFormatter()
-        f.dateFormat = "dd.MM.yy"
-        return f
+        let formatter = DateFormatter()
+        formatter.dateFormat = "dd.MM.yy"
+        return formatter
     }()
 
-    // Sort/Filter state
     private let sortOptions = [
         "Date (newest first)",
-        "Date (oldest first)",
-        "Title (A–Z)",
-        "Title (Z–A)"
+        "Date (oldest first)"
     ]
     private var selectedSortOptionIndex: Int?
-    private var selectedFilterOptions: Set<String> = [] // пока не используем в фильтрации
 
     // MARK: - Init
     init(petDisplayName: String, petAvatarImageData: Data?, petAvatarFileName: String?, petId: UUID?) {
@@ -371,7 +92,9 @@ final class VaccinationsListViewController: UIViewController, SortOptionsViewCon
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         setupNavigation()
-        setupViewsAndConstraints()
+        setupTable()
+        setupBottomBar()
+        buildAndApplyTableHeader()
         fillHeader()
         reloadFromStorage()
     }
@@ -381,12 +104,170 @@ final class VaccinationsListViewController: UIViewController, SortOptionsViewCon
         reloadFromStorage()
     }
 
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        // пересчитать высоту header при изменении ширины
+        guard let header = tableView.tableHeaderView else { return }
+        let targetSize = CGSize(width: tableView.bounds.width, height: 0)
+        let height = header.systemLayoutSizeFitting(targetSize,
+                                                    withHorizontalFittingPriority: .required,
+                                                    verticalFittingPriority: .fittingSizeLevel).height
+        if abs(header.frame.height - height) > 0.5 {
+            header.frame.size.height = height
+            tableView.tableHeaderView = header
+        }
+    }
+
+    private func reloadFromStorage() {
+        if let petId {
+            allItems = VaccinationsStorage.shared.fetchVaccinations(forPetId: petId)
+        } else {
+            allItems = []
+        }
+        applyFiltersAndSortAndReload()
+    }
+    
+    private func applyFiltersAndSortAndReload() {
+        // Фоллбек как в ячейке: "Vaccination", если title nil/пуст
+        let fallback = String(localized: "vaccination_default_title", defaultValue: "Vaccination")
+        
+        if selectedFilterTitles.isEmpty {
+            items = allItems
+        } else {
+            items = allItems.filter { item in
+                let title = (item.title?.nilIfBlank) ?? fallback
+                return selectedFilterTitles.contains(title)
+            }
+        }
+        
+        applySelectedSort()
+        
+        actionsStackView.isHidden = items.isEmpty
+        tableView.reloadData()
+        
+        if items.isEmpty {
+            // фон таблицы на весь экран
+            let emptyView = UIView(frame: tableView.bounds)
+            emptyView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+            
+            let label = Labels(
+                style: .emptyStateTitleLabelStyle,
+                text: String(localized: "no_vaccinations_title", defaultValue: "No Vaccinations")
+            )
+            label.translatesAutoresizingMaskIntoConstraints = false
+            emptyView.addSubview(label)
+            
+            NSLayoutConstraint.activate([
+                label.centerXAnchor.constraint(equalTo: emptyView.centerXAnchor),
+                label.centerYAnchor.constraint(equalTo: emptyView.centerYAnchor) // <-- по центру Y
+            ])
+            
+            tableView.backgroundView = emptyView
+        } else {
+            tableView.backgroundView = nil
+        }
+    }
+
+    
     // MARK: - Setup
     private func setupNavigation() {
         let closeButton = UIBarButtonItem(image: UIImage(systemName: "xmark"),
                                           style: .plain, target: self, action: #selector(closeTapped))
         closeButton.accessibilityLabel = String(localized: "close_title", defaultValue: "Close")
         navigationItem.rightBarButtonItem = closeButton
+    }
+
+    private func setupTable() {
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        tableView.backgroundColor = .clear
+        tableView.register(VaccinationTableViewCell.self, forCellReuseIdentifier: VaccinationTableViewCell.reuseIdentifier)
+        tableView.dataSource = self
+        tableView.delegate = self
+        tableView.rowHeight = UITableView.automaticDimension
+        tableView.estimatedRowHeight = 60
+        tableView.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
+
+        view.addSubview(tableView)
+        NSLayoutConstraint.activate([
+            tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            tableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -64) // место под кнопку
+        ])
+    }
+
+    private func setupBottomBar() {
+        bottomBarContainerView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(bottomBarContainerView)
+
+        let readable = bottomBarContainerView.readableContentGuide
+        bottomBarContainerView.addSubview(addVaccinationButton)
+
+        NSLayoutConstraint.activate([
+            bottomBarContainerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            bottomBarContainerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            bottomBarContainerView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+
+            addVaccinationButton.leadingAnchor.constraint(equalTo: readable.leadingAnchor),
+            addVaccinationButton.trailingAnchor.constraint(equalTo: readable.trailingAnchor),
+            addVaccinationButton.topAnchor.constraint(equalTo: bottomBarContainerView.topAnchor, constant: 8),
+            addVaccinationButton.bottomAnchor.constraint(equalTo: bottomBarContainerView.bottomAnchor, constant: -8),
+            addVaccinationButton.centerXAnchor.constraint(equalTo: bottomBarContainerView.centerXAnchor),
+            addVaccinationButton.widthAnchor.constraint(lessThanOrEqualToConstant: 300)
+        ])
+    }
+
+    private func buildAndApplyTableHeader() {
+        // header stack
+        let headerStack = UIStackView()
+        headerStack.axis = .vertical
+        headerStack.alignment = .center
+        headerStack.spacing = 16
+        headerStack.translatesAutoresizingMaskIntoConstraints = false
+
+        // top row with avatar and name
+        headerHorizontalStackView.axis = .horizontal
+        headerHorizontalStackView.alignment = .center
+        headerHorizontalStackView.spacing = 16
+        headerHorizontalStackView.translatesAutoresizingMaskIntoConstraints = false
+
+        let avatarSide: CGFloat = 80
+        avatarImageView.layer.cornerRadius = avatarSide / 2
+
+        headerHorizontalStackView.addArrangedSubview(avatarImageView)
+        headerHorizontalStackView.addArrangedSubview(petNameLabel)
+        petNameLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+
+        actionsStackView.addArrangedSubview(sortButton)
+        actionsStackView.addArrangedSubview(filterButton)
+
+        headerStack.addArrangedSubview(headerHorizontalStackView)
+        headerStack.addArrangedSubview(sectionTitleLabel)
+        headerStack.addArrangedSubview(actionsStackView)
+
+        let container = UIView()
+        container.addSubview(headerStack)
+
+        NSLayoutConstraint.activate([
+            avatarImageView.widthAnchor.constraint(equalToConstant: avatarSide),
+            avatarImageView.heightAnchor.constraint(equalToConstant: avatarSide),
+
+            headerStack.topAnchor.constraint(equalTo: container.topAnchor, constant: 16),
+            headerStack.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 16),
+            headerStack.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -16),
+            headerStack.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -8),
+            
+            actionsStackView.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 40),
+            actionsStackView.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -40)
+        ])
+
+        // авто-расчёт высоты
+        let targetSize = CGSize(width: view.bounds.width, height: 0)
+        let height = container.systemLayoutSizeFitting(targetSize,
+                                                       withHorizontalFittingPriority: .required,
+                                                       verticalFittingPriority: .fittingSizeLevel).height
+        container.frame = CGRect(x: 0, y: 0, width: view.bounds.width, height: height)
+        tableView.tableHeaderView = container
     }
 
     private func fillHeader() {
@@ -401,200 +282,51 @@ final class VaccinationsListViewController: UIViewController, SortOptionsViewCon
         }
     }
 
-    private func reloadFromStorage() {
-        if let petId {
-            items = VaccinationsStorage.shared.fetchVaccinations(forPetId: petId)
-        } else {
-            items = []
-        }
-        applySelectedSort()
-        renderState()
-    }
-
     private func applySelectedSort() {
         guard let index = selectedSortOptionIndex else { return }
         switch index {
-        case 0: // newest first
+        case 0: // самые новые сверху
             items.sort { ($0.dateGiven ?? $0.createdAt) > ($1.dateGiven ?? $1.createdAt) }
-        case 1: // oldest first
+        case 1: // самые старые сверху
             items.sort { ($0.dateGiven ?? $0.createdAt) < ($1.dateGiven ?? $1.createdAt) }
-        case 2: // title A–Z
-            items.sort { ($0.title ?? "") < ($1.title ?? "") }
-        case 3: // title Z–A
-            items.sort { ($0.title ?? "") > ($1.title ?? "") }
-        default: break
+        default:
+            break
         }
     }
 
-    private func renderState() {
-        listStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
+    // MARK: - Actions
+    @objc private func filterTapped() {
+        // Список уникальных названий из allItems
+        let fallback = String(localized: "vaccination_default_title", defaultValue: "Vaccination")
+        let titles = Set(allItems.map { ($0.title?.nilIfBlank) ?? fallback })
+            .sorted { $0.localizedCaseInsensitiveCompare($1) == .orderedAscending }
 
-        let isEmpty = items.isEmpty
-        emptyStateContainerView.isHidden = !isEmpty
-        listStackView.isHidden = isEmpty
-        actionsStackView.isHidden = isEmpty // как на макете, показываем когда есть список
+        // Один раздел «By title»
+        let section = FilterSection(
+            title: String(localized: "filter_by_title", defaultValue: "By title"),
+            options: titles.map { FilterOption(name: $0) }
+        )
 
-        guard !isEmpty else { return }
-
-        for (index, item) in items.enumerated() {
-            let row = makeVaccinationRow(item: item, index: index)
-            listStackView.addArrangedSubview(row)
+        let filtersVC = FiltersViewController(sections: [section])
+        filtersVC.setSelectedOptions(self.selectedFilterTitles)
+        filtersVC.onFilterOptionsSave = { [weak self] options in
+            guard let self = self else { return }
+            self.selectedFilterTitles = options
+            self.applyFiltersAndSortAndReload()
         }
+
+        if #available(iOS 15.0, *), let sheet = filtersVC.sheetPresentationController {
+            sheet.prefersGrabberVisible = true
+            sheet.prefersScrollingExpandsWhenScrolledToEdge = false
+            sheet.detents = [.large()]
+        } else {
+            filtersVC.modalPresentationStyle = .fullScreen
+        }
+        present(filtersVC, animated: true)
     }
 
-    private func makeVaccinationRow(item: VaccinationListItem, index: Int) -> UIView {
-        let container = Views(style: .view12Style)
-        container.backgroundColor = .tertiarySystemGroupedBackground
-        container.isUserInteractionEnabled = true
-        container.tag = index
-        let tap = UITapGestureRecognizer(target: self, action: #selector(rowTapped(_:)))
-        container.addGestureRecognizer(tap)
-
-        let dateLabel = Labels(style: .ordinaryText17LabelStyle,
-                               text: item.dateGiven.map { listDateFormatter.string(from: $0) } ?? "")
-        dateLabel.textAlignment = .left
-        dateLabel.setContentHuggingPriority(.required, for: .horizontal)
-
-        let titleLabel = Labels(style: .ordinaryText17LabelStyle,
-                                text: item.title ?? String(localized: "vaccination_default_title",
-                                                           defaultValue: "Vaccination"))
-        titleLabel.numberOfLines = 0
-
-        let hStack = UIStackView()
-        hStack.axis = .horizontal
-        hStack.alignment = .center
-        hStack.spacing = 16
-        hStack.translatesAutoresizingMaskIntoConstraints = false
-        hStack.addArrangedSubview(dateLabel)
-        hStack.addArrangedSubview(titleLabel)
-
-        let separator = UIView()
-        separator.translatesAutoresizingMaskIntoConstraints = false
-        separator.backgroundColor = .separator
-
-        container.addSubview(hStack)
-        container.addSubview(separator)
-
-        NSLayoutConstraint.activate([
-            hStack.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 16),
-            hStack.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -16),
-            hStack.topAnchor.constraint(equalTo: container.topAnchor, constant: 12),
-            hStack.bottomAnchor.constraint(equalTo: separator.topAnchor, constant: -12),
-
-            separator.heightAnchor.constraint(equalToConstant: 1),
-            separator.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 16),
-            separator.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -16),
-            separator.bottomAnchor.constraint(equalTo: container.bottomAnchor)
-        ])
-        return container
-    }
-
-    // MARK: - Sort delegate
-    func sortOptionsViewController(_ controller: SortViewController, didSelectOptionAt index: Int) {
-        selectedSortOptionIndex = index
-        applySelectedSort()
-        renderState()
-    }
-}
-
-// MARK: - Layout
-private extension VaccinationsListViewController {
-    func setupViewsAndConstraints() {
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
-        contentContainerView.translatesAutoresizingMaskIntoConstraints = false
-        contentStackView.translatesAutoresizingMaskIntoConstraints = false
-
-        view.addSubview(scrollView)
-        scrollView.addSubview(contentContainerView)
-        contentContainerView.addSubview(contentStackView)
-
-        contentStackView.axis = .vertical
-        contentStackView.alignment = .fill
-        contentStackView.spacing = 16
-
-        // Header
-        headerContainerView.translatesAutoresizingMaskIntoConstraints = false
-        headerHorizontalStackView.translatesAutoresizingMaskIntoConstraints = false
-        headerHorizontalStackView.axis = .horizontal
-        headerHorizontalStackView.alignment = .center
-        headerHorizontalStackView.spacing = 16
-        headerContainerView.addSubview(headerHorizontalStackView)
-
-        let avatarSide: CGFloat = 80
-        avatarImageView.layer.cornerRadius = avatarSide / 2
-
-        headerHorizontalStackView.addArrangedSubview(avatarImageView)
-        headerHorizontalStackView.addArrangedSubview(petNameLabel)
-        petNameLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
-
-        // Actions
-        actionsStackView.addArrangedSubview(sortButton)
-        actionsStackView.addArrangedSubview(filterButton)
-
-        // Empty state
-        emptyStateContainerView.translatesAutoresizingMaskIntoConstraints = false
-        emptyStateContainerView.addSubview(emptyStateLabel)
-        emptyStateContainerView.addSubview(addVaccinationButton)
-
-        // List stack
-        listStackView.translatesAutoresizingMaskIntoConstraints = false
-        listStackView.axis = .vertical
-        listStackView.alignment = .fill
-        listStackView.spacing = 0
-
-        // Add to main stack
-        contentStackView.addArrangedSubview(headerContainerView)
-        contentStackView.addArrangedSubview(sectionTitleLabel)
-        contentStackView.addArrangedSubview(actionsStackView)
-        contentStackView.addArrangedSubview(emptyStateContainerView)
-        contentStackView.addArrangedSubview(listStackView)
-
-        NSLayoutConstraint.activate([
-            // Scroll
-            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            scrollView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
-
-            // Content container
-            contentContainerView.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
-            contentContainerView.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor),
-            contentContainerView.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor),
-            contentContainerView.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor),
-            contentContainerView.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor),
-
-            // Inner stack
-            contentStackView.topAnchor.constraint(equalTo: contentContainerView.topAnchor, constant: 16),
-            contentStackView.leadingAnchor.constraint(equalTo: contentContainerView.leadingAnchor, constant: 16),
-            contentStackView.trailingAnchor.constraint(equalTo: contentContainerView.trailingAnchor, constant: -16),
-            contentStackView.bottomAnchor.constraint(equalTo: contentContainerView.bottomAnchor, constant: -16),
-
-            // Header
-            headerHorizontalStackView.topAnchor.constraint(equalTo: headerContainerView.topAnchor),
-            headerHorizontalStackView.bottomAnchor.constraint(equalTo: headerContainerView.bottomAnchor),
-            headerHorizontalStackView.centerXAnchor.constraint(equalTo: headerContainerView.centerXAnchor),
-            headerHorizontalStackView.leadingAnchor.constraint(greaterThanOrEqualTo: headerContainerView.leadingAnchor),
-            headerHorizontalStackView.trailingAnchor.constraint(lessThanOrEqualTo: headerContainerView.trailingAnchor),
-            avatarImageView.widthAnchor.constraint(equalToConstant: avatarSide),
-            avatarImageView.heightAnchor.constraint(equalToConstant: avatarSide),
-
-            // Actions height
-            actionsStackView.heightAnchor.constraint(equalToConstant: 32),
-
-            // Empty state
-            emptyStateLabel.centerXAnchor.constraint(equalTo: emptyStateContainerView.centerXAnchor),
-            emptyStateLabel.topAnchor.constraint(equalTo: emptyStateContainerView.topAnchor, constant: 80),
-            addVaccinationButton.centerXAnchor.constraint(equalTo: emptyStateContainerView.centerXAnchor),
-            addVaccinationButton.topAnchor.constraint(equalTo: emptyStateLabel.bottomAnchor, constant: 28),
-            addVaccinationButton.bottomAnchor.constraint(equalTo: emptyStateContainerView.bottomAnchor, constant: -40),
-            addVaccinationButton.widthAnchor.constraint(lessThanOrEqualToConstant: 300)
-        ])
-    }
-}
-
-// MARK: - Actions
-private extension VaccinationsListViewController {
-    @objc func closeTapped() {
+    
+    @objc private func closeTapped() {
         if let nav = navigationController, nav.presentingViewController != nil {
             nav.dismiss(animated: true)
         } else if presentingViewController != nil {
@@ -604,7 +336,7 @@ private extension VaccinationsListViewController {
         }
     }
 
-    @objc func addVaccinationTapped() {
+    @objc private func addVaccinationTapped() {
         let viewController = CreateNewVaccinationViewController(
             petDisplayName: petDisplayName,
             petAvatarImageData: petAvatarImageData,
@@ -614,7 +346,7 @@ private extension VaccinationsListViewController {
         navigationController?.pushViewController(viewController, animated: true)
     }
 
-    @objc func sortTapped() {
+    @objc private func sortTapped() {
         let sortVC = SortViewController()
         sortVC.options = sortOptions
         sortVC.selectedIndex = selectedSortOptionIndex
@@ -634,26 +366,65 @@ private extension VaccinationsListViewController {
         }
         present(sortVC, animated: true)
     }
+}
 
-    @objc func filterTapped() {
-        let filtersVC = FiltersViewController()
-        filtersVC.setSelectedOptions(selectedFilterOptions)
-        filtersVC.onFilterOptionsSave = { [weak self] options in
-            // Фильтрацию добавим позже
-            self?.selectedFilterOptions = options
-        }
-        if #available(iOS 15.0, *), let sheet = filtersVC.sheetPresentationController {
-            sheet.prefersGrabberVisible = true
-            sheet.prefersScrollingExpandsWhenScrolledToEdge = false
-            sheet.detents = [.large()]
-        }
-        present(filtersVC, animated: true)
+// MARK: - UITableViewDataSource / Delegate
+extension VaccinationsListViewController: UITableViewDataSource, UITableViewDelegate {
+
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        items.count
     }
 
-    @objc func rowTapped(_ gesture: UITapGestureRecognizer) {
-        guard let index = gesture.view?.tag, index < items.count else { return }
-        let item = items[index]
-        // TODO: открыть экран деталей вакцинации (когда появится)
-        print("Tapped vaccination:", item.id)
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        guard
+            let cell = tableView.dequeueReusableCell(withIdentifier: VaccinationTableViewCell.reuseIdentifier, for: indexPath) as? VaccinationTableViewCell
+        else { return UITableViewCell() }
+        cell.configure(with: items[indexPath.row], dateFormatter: listDateFormatter)
+        return cell
+    }
+
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        let item = items[indexPath.row]
+        let detailsViewController = VaccinationDetailsViewController(
+            petDisplayName: petDisplayName,
+            petAvatarImageData: petAvatarImageData,
+            petAvatarFileName: petAvatarFileName,
+            vaccinationId: item.id
+        )
+        navigationController?.pushViewController(detailsViewController, animated: true)
+    }
+
+
+    // Свайп Delete
+    func tableView(_ tableView: UITableView,
+                   trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath)
+    -> UISwipeActionsConfiguration? {
+
+        let deleteAction = UIContextualAction(style: .destructive,
+                                              title: String(localized: "delete_title", defaultValue: "Delete")) { [weak self] _, _, completion in
+            guard let self else { completion(false); return }
+            let item = self.items[indexPath.row]
+            if VaccinationsStorage.shared.deleteVaccination(by: item.id) {
+                self.items.remove(at: indexPath.row)
+                tableView.deleteRows(at: [indexPath], with: .automatic)
+                self.reloadFromStorage() // чтобы пересчитать empty state/видимость кнопок
+                completion(true)
+            } else {
+                completion(false)
+            }
+        }
+        return UISwipeActionsConfiguration(actions: [deleteAction])
+    }
+}
+
+extension VaccinationsListViewController: SortOptionsViewControllerDelegate {
+    func sortOptionsViewController(
+        _ controller: SortViewController,
+        didSelectOptionAt index: Int
+    ) {
+        selectedSortOptionIndex = index
+        applySelectedSort()
+        tableView.reloadData()
     }
 }
